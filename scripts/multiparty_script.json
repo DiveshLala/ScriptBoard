@@ -1,0 +1,425 @@
+{
+    "Node0": {
+        "id": 20,
+        "xpos": 977.0569620253166,
+        "ypos": 1129.9177215189875,
+        "type": "robot",
+        "dialog": "",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": null
+            }
+        ]
+    },
+    "Node1": {
+        "id": 19,
+        "xpos": 70.78481012658229,
+        "ypos": 1327.240506329114,
+        "type": "turn_based_decision",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 32.0,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 2.0,
+                "type": "condition_output",
+                "connectedNodeID": 10,
+                "condition": {
+                    "target": "Turn state",
+                    "comparator": "is",
+                    "value": "Offer to robot",
+                    "type": "String"
+                }
+            },
+            {
+                "relX": 66,
+                "relY": 17.0,
+                "type": "condition_output",
+                "connectedNodeID": 1,
+                "condition": {
+                    "target": "Turn state",
+                    "comparator": "is other",
+                    "value": "",
+                    "type": "String"
+                }
+            }
+        ]
+    },
+    "Node2": {
+        "id": 17,
+        "xpos": 100.02531645569621,
+        "ypos": 981.6708860759494,
+        "type": "turn_based_decision",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 32.0,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 2.0,
+                "type": "condition_output",
+                "connectedNodeID": 6,
+                "condition": {
+                    "target": "Turn state",
+                    "comparator": "is",
+                    "value": "Offer to robot",
+                    "type": "String"
+                }
+            },
+            {
+                "relX": 66,
+                "relY": 17.0,
+                "type": "condition_output",
+                "connectedNodeID": 1,
+                "condition": {
+                    "target": "Turn state",
+                    "comparator": "is other",
+                    "value": "",
+                    "type": "String"
+                }
+            }
+        ]
+    },
+    "Node3": {
+        "id": 0,
+        "xpos": -463.3326027188503,
+        "ypos": 1171.3970501866568,
+        "type": "start",
+        "connectors": [
+            {
+                "relX": 74,
+                "relY": 36.0,
+                "type": "output",
+                "connectedNodeID": 11
+            }
+        ]
+    },
+    "Node4": {
+        "id": 1,
+        "xpos": 5.300378984947088,
+        "ypos": 1171.0317833625334,
+        "type": "human",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 31.5,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 1.5,
+                "type": "condition_output",
+                "connectedNodeID": 17,
+                "condition": {
+                    "target": "Target's turn",
+                    "comparator": "is anything",
+                    "value": "",
+                    "type": "String"
+                }
+            },
+            {
+                "relX": 66,
+                "relY": 16.5,
+                "type": "condition_output",
+                "connectedNodeID": 19,
+                "condition": {
+                    "target": "Non-target's turn",
+                    "comparator": "is anything",
+                    "value": "",
+                    "type": "String"
+                }
+            }
+        ]
+    },
+    "Node5": {
+        "id": 5,
+        "xpos": -151.19903719102655,
+        "ypos": 1168.5991499504714,
+        "type": "human_target",
+        "new target": "Human 1",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 31.5,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 31.5,
+                "type": "output",
+                "connectedNodeID": 1
+            }
+        ]
+    },
+    "Node6": {
+        "id": 6,
+        "xpos": -21.550632911392405,
+        "ypos": 908.3987341772153,
+        "type": "robot_gpt",
+        "dialog": "",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "label": "Oppose view",
+        "prompt": {
+            "text prompt": "You are a robot engaging in a debate with two humans about whether AI is dangerous. One human has just finished offering an explanation to you on this topic.\n\nOffer a counter-argument to the speaker and ask them what they think about the counter-argument. Keep the counter-argument brief. The dialogue history is given below.",
+            "speakers": "All",
+            "history": "Whole dialog history",
+            "turns": 1
+        },
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 1
+            }
+        ]
+    },
+    "Node7": {
+        "id": 10,
+        "xpos": 149.2594936708861,
+        "ypos": 1140.2784810126584,
+        "type": "gpt_decision",
+        "label": "Get position",
+        "prompt": {
+            "text prompt": "You are a robot engaging in a debate with two humans about whether AI is dangerous. One human has just finished speaking. If this person has the same point of view than the other person in the conversation then output \"agree\". If this person has a different point of view then output \"disagree\". If you cannot determine if the two people are in agreement or only one person has spoken so far, then output \"neutral\".\n\nThe conversation history is given below:",
+            "speakers": "All",
+            "history": "Whole dialog history",
+            "turns": 1
+        },
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 32.0,
+                "type": "input"
+            },
+            {
+                "relX": 65,
+                "relY": 2.0,
+                "type": "condition_output",
+                "connectedNodeID": 15,
+                "condition": {
+                    "target": "LLM output",
+                    "comparator": "equals",
+                    "value": "agree",
+                    "type": "String"
+                }
+            },
+            {
+                "relX": 65,
+                "relY": 17.0,
+                "type": "condition_output",
+                "connectedNodeID": 14,
+                "condition": {
+                    "target": "LLM output",
+                    "comparator": "equals",
+                    "value": "disagree",
+                    "type": "String"
+                }
+            },
+            {
+                "relX": 65,
+                "relY": 32.0,
+                "type": "condition_output",
+                "connectedNodeID": 12,
+                "condition": {
+                    "target": "LLM output",
+                    "comparator": "is other",
+                    "value": "",
+                    "type": "String"
+                }
+            }
+        ]
+    },
+    "Node8": {
+        "id": 11,
+        "xpos": -297.791775090609,
+        "ypos": 1160.9230053223273,
+        "type": "robot",
+        "dialog": "Is AI dangerous? Why or why not?",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "Human 1",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 5
+            }
+        ]
+    },
+    "Node9": {
+        "id": 12,
+        "xpos": 307.1835443037975,
+        "ypos": 1306.246835443038,
+        "type": "robot",
+        "dialog": "Can you speak more on that?",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 13
+            }
+        ]
+    },
+    "Node10": {
+        "id": 13,
+        "xpos": 543.651713247437,
+        "ypos": 1146.6726012291956,
+        "type": "human_target",
+        "new target": "Human 2",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 31.5,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 31.5,
+                "type": "output",
+                "connectedNodeID": 16
+            }
+        ]
+    },
+    "Node11": {
+        "id": 14,
+        "xpos": 319.9414457080974,
+        "ypos": 1122.6887309920232,
+        "type": "robot",
+        "dialog": "Oh, can you explain why you disagree?",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 13
+            }
+        ]
+    },
+    "Node12": {
+        "id": 15,
+        "xpos": 310.98505412999015,
+        "ypos": 935.4187252679632,
+        "type": "robot",
+        "dialog": "Wow, so you also agree. Do you think this is the view of most people?",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 13
+            }
+        ]
+    },
+    "Node13": {
+        "id": 16,
+        "xpos": 694.2819352428767,
+        "ypos": 1145.8583838130041,
+        "type": "human",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 31.5,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 1.5,
+                "type": "condition_output",
+                "connectedNodeID": 20,
+                "condition": {
+                    "target": "Target's turn",
+                    "comparator": "is anything",
+                    "value": "",
+                    "type": "String"
+                }
+            }
+        ]
+    },
+    "Variable0": {
+        "name": "name",
+        "type": "String",
+        "value": "John"
+    },
+    "Variable1": {
+        "name": "age",
+        "type": "Int",
+        "value": "25"
+    },
+    "Environment": {
+        "Human0": {
+            "human ID": 1,
+            "target": true
+        },
+        "Human1": {
+            "human ID": 2,
+            "target": false
+        }
+    }
+}

@@ -1,0 +1,156 @@
+{
+    "Node0": {
+        "id": 5,
+        "xpos": 369.1989196125543,
+        "ypos": 1027.8119136113985,
+        "type": "robot",
+        "dialog": "Times up. Bye!",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": null
+            }
+        ]
+    },
+    "Node1": {
+        "id": 4,
+        "xpos": 211.92417818320138,
+        "ypos": 1127.4888006081387,
+        "type": "robot_gpt",
+        "dialog": "",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "label": "GPT response",
+        "prompt": {
+            "text prompt": "Response briefly to the following conversation.",
+            "speakers": "All",
+            "history": "Whole dialog history",
+            "turns": 1
+        },
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 3
+            }
+        ]
+    },
+    "Node2": {
+        "id": 3,
+        "xpos": 204.86324834663728,
+        "ypos": 979.6548518434099,
+        "type": "human",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 31.5,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 1.5,
+                "type": "condition_output",
+                "connectedNodeID": 4,
+                "condition": {
+                    "target": "Target's turn",
+                    "comparator": "is anything",
+                    "value": "",
+                    "type": "String"
+                }
+            },
+            {
+                "relX": 42.0,
+                "relY": 68,
+                "type": "condition_output",
+                "connectedNodeID": 5,
+                "condition": {
+                    "target": "Timer",
+                    "comparator": "time elapsed",
+                    "value": true,
+                    "type": "Boolean"
+                }
+            }
+        ]
+    },
+    "Node3": {
+        "id": 2,
+        "xpos": 48.74883466362634,
+        "ypos": 980.0520611174502,
+        "type": "timer",
+        "timer time": 30,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 32.0,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 32.0,
+                "type": "output",
+                "connectedNodeID": 3
+            }
+        ]
+    },
+    "Node4": {
+        "id": 1,
+        "xpos": -81.2118927927391,
+        "ypos": 980.5814267769898,
+        "type": "human_target",
+        "new target": "Human 1",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 31.5,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 31.5,
+                "type": "output",
+                "connectedNodeID": 2
+            }
+        ]
+    },
+    "Node5": {
+        "id": 0,
+        "xpos": -230.51886623967266,
+        "ypos": 978.4101317082736,
+        "type": "start",
+        "connectors": [
+            {
+                "relX": 74,
+                "relY": 36.0,
+                "type": "output",
+                "connectedNodeID": 1
+            }
+        ]
+    },
+    "Environment": {
+        "Human0": {
+            "human ID": 1,
+            "target": true
+        }
+    }
+}

@@ -1,0 +1,324 @@
+{
+    "Node0": {
+        "id": 11,
+        "xpos": 315.2479908020853,
+        "ypos": 1271.754236235726,
+        "type": "robot",
+        "dialog": "I see",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": null
+            }
+        ]
+    },
+    "Node1": {
+        "id": 10,
+        "xpos": 316.1146934821887,
+        "ypos": 1157.3494824620768,
+        "type": "robot",
+        "dialog": "I'm sorry",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": null
+            }
+        ]
+    },
+    "Node2": {
+        "id": 9,
+        "xpos": 305.7142613209479,
+        "ypos": 1019.5437563256355,
+        "type": "robot",
+        "dialog": "That's great!",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": null
+            }
+        ]
+    },
+    "Node3": {
+        "id": 8,
+        "xpos": 23.968971526617842,
+        "ypos": 1187.4506709054892,
+        "type": "gpt_decision",
+        "label": "GPT sentiment decision",
+        "prompt": {
+            "text prompt": "Output the current sentiment of the conversation into positive, negative or neutral. The output should only be one of these three words.",
+            "speakers": "All",
+            "history": "Whole dialog history",
+            "turns": 1
+        },
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 32.0,
+                "type": "input"
+            },
+            {
+                "relX": 65,
+                "relY": 2.0,
+                "type": "condition_output",
+                "connectedNodeID": 9,
+                "condition": {
+                    "target": "LLM output",
+                    "comparator": "equals",
+                    "value": "positive",
+                    "type": "String"
+                }
+            },
+            {
+                "relX": 65,
+                "relY": 17.0,
+                "type": "condition_output",
+                "connectedNodeID": 10,
+                "condition": {
+                    "target": "LLM output",
+                    "comparator": "equals",
+                    "value": "negative",
+                    "type": "String"
+                }
+            },
+            {
+                "relX": 65,
+                "relY": 32.0,
+                "type": "condition_output",
+                "connectedNodeID": 11,
+                "condition": {
+                    "target": "LLM output",
+                    "comparator": "is other",
+                    "value": "",
+                    "type": "String"
+                }
+            }
+        ]
+    },
+    "Node4": {
+        "id": 7,
+        "xpos": -194.94010385943992,
+        "ypos": 1179.283644104455,
+        "type": "human",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 31.5,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 1.5,
+                "type": "condition_output",
+                "connectedNodeID": 8,
+                "condition": {
+                    "target": "Target's turn",
+                    "comparator": "is anything",
+                    "value": "",
+                    "type": "String"
+                }
+            }
+        ]
+    },
+    "Node5": {
+        "id": 6,
+        "xpos": 8.18181818181818,
+        "ypos": 927.0871212121211,
+        "type": "robot_gpt",
+        "dialog": "",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "label": "GPT follow up response",
+        "prompt": {
+            "text prompt": "You are a robot talking to a human. Respond to the human's speech in a polite manner.",
+            "speakers": "All",
+            "history": "Whole dialog history",
+            "turns": 1
+        },
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 4
+            }
+        ]
+    },
+    "Node6": {
+        "id": 4,
+        "xpos": 188.79545454545453,
+        "ypos": 937.5075757575756,
+        "variable": "sentiment",
+        "type": "gpt_variable",
+        "prompt": {
+            "text prompt": "Output the current sentiment of the conversation into positive, negative or neutral. The output should only be one of these three words.",
+            "speakers": "All",
+            "history": "Whole dialog history",
+            "turns": 1
+        },
+        "label": "Store sentiment",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 34.5,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 34.5,
+                "type": "output",
+                "connectedNodeID": 7
+            }
+        ]
+    },
+    "Node7": {
+        "id": 3,
+        "xpos": -121.2703760506506,
+        "ypos": 961.7412713985008,
+        "type": "human",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 31.5,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 1.5,
+                "type": "condition_output",
+                "connectedNodeID": 6,
+                "condition": {
+                    "target": "Target's turn",
+                    "comparator": "is anything",
+                    "value": "",
+                    "type": "String"
+                }
+            }
+        ]
+    },
+    "Node8": {
+        "id": 2,
+        "xpos": -253.30896734574753,
+        "ypos": 957.1411633581905,
+        "type": "robot_gpt",
+        "dialog": "",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "label": "GPT response",
+        "prompt": {
+            "text prompt": "You are a robot talking to a human. Respond to the human's speech in a polite manner.",
+            "speakers": "All",
+            "history": "Whole dialog history",
+            "turns": 1
+        },
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 3
+            }
+        ]
+    },
+    "Node9": {
+        "id": 1,
+        "xpos": -398.6152336837398,
+        "ypos": 954.8076499576736,
+        "type": "human",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 31.5,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 1.5,
+                "type": "condition_output",
+                "connectedNodeID": 2,
+                "condition": {
+                    "target": "Target's turn",
+                    "comparator": "is anything",
+                    "value": "",
+                    "type": "String"
+                }
+            }
+        ]
+    },
+    "Node10": {
+        "id": 0,
+        "xpos": -536.087446419664,
+        "ypos": 946.8408392372598,
+        "type": "start",
+        "connectors": [
+            {
+                "relX": 74,
+                "relY": 36.0,
+                "type": "output",
+                "connectedNodeID": 1
+            }
+        ]
+    },
+    "Variable0": {
+        "name": "sentiment",
+        "type": "String",
+        "value": ""
+    },
+    "Environment": {
+        "Human0": {
+            "human ID": 1,
+            "target": true
+        }
+    }
+}

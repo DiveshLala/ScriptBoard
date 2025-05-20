@@ -1,0 +1,315 @@
+{
+    "Node0": {
+        "id": 0,
+        "xpos": -550.0,
+        "ypos": 1064.0,
+        "type": "start",
+        "connectors": [
+            {
+                "relX": 74,
+                "relY": 36.0,
+                "type": "output",
+                "connectedNodeID": 2
+            }
+        ]
+    },
+    "Node1": {
+        "id": 1,
+        "xpos": -398.01518463907456,
+        "ypos": 1202.7302698177264,
+        "type": "robot",
+        "dialog": "It's OK to talk",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 2
+            }
+        ]
+    },
+    "Node2": {
+        "id": 2,
+        "xpos": -392.0,
+        "ypos": 1070.5,
+        "type": "human",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 31.5,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 1.5,
+                "type": "condition_output",
+                "connectedNodeID": 3,
+                "condition": {
+                    "target": "Target's turn",
+                    "comparator": "contains",
+                    "value": "happy",
+                    "type": "String"
+                }
+            },
+            {
+                "relX": 66,
+                "relY": 16.5,
+                "type": "condition_output",
+                "connectedNodeID": 4,
+                "condition": {
+                    "target": "Human 1 utterance",
+                    "comparator": "contains",
+                    "value": "Wordlist(colors)",
+                    "type": "String"
+                }
+            },
+            {
+                "relX": 66,
+                "relY": 31.5,
+                "type": "condition_output",
+                "connectedNodeID": 5,
+                "condition": {
+                    "Condition_0": {
+                        "target": "Target's turn",
+                        "comparator": "is anything",
+                        "value": "",
+                        "type": "String"
+                    },
+                    "Condition_1": {
+                        "target": "Variable(name)",
+                        "comparator": "equals",
+                        "value": "John",
+                        "type": "String"
+                    }
+                }
+            },
+            {
+                "relX": 12.0,
+                "relY": 68,
+                "type": "condition_output",
+                "connectedNodeID": 1,
+                "condition": {
+                    "target": "Silence time",
+                    "comparator": "greater than",
+                    "value": 5000,
+                    "type": "Int"
+                }
+            }
+        ]
+    },
+    "Node3": {
+        "id": 3,
+        "xpos": -189.68980112791382,
+        "ypos": 953.2387925588512,
+        "type": "robot",
+        "dialog": "That's great!",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 6
+            }
+        ]
+    },
+    "Node4": {
+        "id": 4,
+        "xpos": -189.68980112791382,
+        "ypos": 1076.7370738019943,
+        "type": "robot",
+        "dialog": "I like that color",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 7
+            }
+        ]
+    },
+    "Node5": {
+        "id": 5,
+        "xpos": -199.66946021826882,
+        "ypos": 1206.4726419766093,
+        "type": "robot",
+        "dialog": "Hey John",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 7
+            }
+        ]
+    },
+    "Node6": {
+        "id": 6,
+        "xpos": -15.783053978173118,
+        "ypos": 954.2337073314399,
+        "type": "variable_update",
+        "variables": {
+            "sentiment": "happy"
+        },
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 35.0,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 35.0,
+                "type": "output",
+                "connectedNodeID": 7
+            }
+        ]
+    },
+    "Node7": {
+        "id": 7,
+        "xpos": 95.24065340202631,
+        "ypos": 1086.969275506055,
+        "type": "variable_decision",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 32.0,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 2.0,
+                "type": "condition_output",
+                "connectedNodeID": 8,
+                "condition": {
+                    "target": "Variable(sentiment)",
+                    "comparator": "equals",
+                    "value": "happy",
+                    "type": "String"
+                }
+            },
+            {
+                "relX": 66,
+                "relY": 17.0,
+                "type": "condition_output",
+                "connectedNodeID": 9,
+                "condition": {
+                    "target": "Variable(sentiment)",
+                    "comparator": "is other",
+                    "value": "",
+                    "type": "String"
+                }
+            }
+        ]
+    },
+    "Node8": {
+        "id": 8,
+        "xpos": 230.77961646445948,
+        "ypos": 976.7591334684961,
+        "type": "robot",
+        "dialog": "I'm also happy",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": null
+            }
+        ]
+    },
+    "Node9": {
+        "id": 9,
+        "xpos": 258.147400551767,
+        "ypos": 1130.3777414126525,
+        "type": "robot",
+        "dialog": "Want to hear a joke?",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": null
+            }
+        ]
+    },
+    "Variable0": {
+        "name": "name",
+        "type": "String",
+        "value": "John"
+    },
+    "Variable1": {
+        "name": "age",
+        "type": "Int",
+        "value": "25"
+    },
+    "Variable2": {
+        "name": "sentiment",
+        "type": "String",
+        "value": ""
+    },
+    "Environment": {
+        "Human0": {
+            "human ID": 1,
+            "target": true
+        }
+    }
+}

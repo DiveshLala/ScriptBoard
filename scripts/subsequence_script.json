@@ -1,0 +1,188 @@
+{
+    "Node0": {
+        "id": 7,
+        "xpos": 137.10954780755793,
+        "ypos": 1047.4657363045314,
+        "type": "enter_subseq",
+        "subsequence name": "Opinion",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 32.0,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 32.0,
+                "type": "output",
+                "connectedNodeID": null
+            }
+        ]
+    },
+    "Node1": {
+        "id": 6,
+        "xpos": -0.03261515640932089,
+        "ypos": 1046.9783683273313,
+        "type": "robot",
+        "dialog": "OK how about lizards?",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 7
+            }
+        ]
+    },
+    "Node2": {
+        "id": 5,
+        "xpos": -117.06108991517884,
+        "ypos": 1049.491000350131,
+        "type": "enter_subseq",
+        "subsequence name": "Opinion",
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 32.0,
+                "type": "input"
+            },
+            {
+                "relX": 66,
+                "relY": 32.0,
+                "type": "output",
+                "connectedNodeID": 6
+            }
+        ]
+    },
+    "Node3": {
+        "id": 1,
+        "xpos": -247.11482871954786,
+        "ypos": 1044.9531042817316,
+        "type": "robot",
+        "dialog": "Are bugs scary?",
+        "tag": "",
+        "emotion": "",
+        "gesture": "",
+        "gaze": "",
+        "barge-in": false,
+        "connectors": [
+            {
+                "relX": -12,
+                "relY": 33.5,
+                "type": "input"
+            },
+            {
+                "relX": 77,
+                "relY": 33.5,
+                "type": "output",
+                "connectedNodeID": 5
+            }
+        ]
+    },
+    "Node4": {
+        "id": 0,
+        "xpos": -383.3327838203136,
+        "ypos": 1043.4657363045314,
+        "type": "start",
+        "connectors": [
+            {
+                "relX": 74,
+                "relY": 36.0,
+                "type": "output",
+                "connectedNodeID": 1
+            }
+        ]
+    },
+    "Environment": {
+        "Human0": {
+            "human ID": 1,
+            "target": true
+        }
+    },
+    "Subsequence0": {
+        "nodes": {
+            "Node0": {
+                "id": 4,
+                "xpos": -86.0,
+                "ypos": 978.5,
+                "type": "human",
+                "connectors": [
+                    {
+                        "relX": -12,
+                        "relY": 31.5,
+                        "type": "input"
+                    },
+                    {
+                        "relX": 66,
+                        "relY": 1.5,
+                        "type": "condition_output",
+                        "connectedNodeID": 3,
+                        "condition": {
+                            "target": "Target's turn",
+                            "comparator": "is anything",
+                            "value": "",
+                            "type": "String"
+                        }
+                    }
+                ]
+            },
+            "Node1": {
+                "id": 3,
+                "xpos": 91.5,
+                "ypos": 973.5,
+                "type": "robot_gpt",
+                "dialog": "",
+                "tag": "",
+                "emotion": "",
+                "gesture": "",
+                "gaze": "",
+                "barge-in": false,
+                "label": "GPT response",
+                "prompt": {
+                    "text prompt": "",
+                    "speakers": "All",
+                    "history": "Whole dialog history",
+                    "turns": 1
+                },
+                "connectors": [
+                    {
+                        "relX": -12,
+                        "relY": 33.5,
+                        "type": "input"
+                    },
+                    {
+                        "relX": 77,
+                        "relY": 33.5,
+                        "type": "output",
+                        "connectedNodeID": null
+                    }
+                ]
+            },
+            "Node2": {
+                "id": 2,
+                "xpos": -247.0,
+                "ypos": 977.0,
+                "type": "start",
+                "connectors": [
+                    {
+                        "relX": 74,
+                        "relY": 36.0,
+                        "type": "output",
+                        "connectedNodeID": 4
+                    }
+                ]
+            }
+        },
+        "name": "Opinion"
+    }
+}
