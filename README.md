@@ -9,7 +9,11 @@ pip install -r requirements.txt
 ```
 
 # How to use
-Refer to the readme folder for how to use ScriptBoard (pdfs and docx files)
+Run the file main.py:
+```
+python main.py
+```
+Refer to the readme folder for how to use ScriptBoard nodes and to set up configuration files for LLMs. Readmes are in pdf and docx file format.
 
 # Citation
 If you use this framework to create dialogue systems please cite the following work:
