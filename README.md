@@ -8,8 +8,8 @@ ScriptBoard is based on the PYQT framework. Install using the requirements file:
 pip install -r requirements.txt
 ```
 
-# Readme documents
-Refer to the documents folder for how to use ScriptBoard (pdfs and docx files)
+# How to use
+Refer to the readme folder for how to use ScriptBoard (pdfs and docx files)
 
 # Citation
 If you use this framework to create dialogue systems please cite the following work:
