@@ -96,7 +96,7 @@ class Server():
 		prompt = message["prompt"]
 		recv_type = message['type']
 		llm = message["llm"]
-		print("Using", llm, recv_type, GPT_AVAILABLE)
+		print("Using", llm, recv_type)
 		if llm == "gpt" and GPT_AVAILABLE:
 			self.process_GPT_prompt(prompt, recv_type)
 		elif llm == "gemini" and GEMINI_AVAILABLE:
@@ -256,7 +256,6 @@ def send_Gemini_request(input_prompt, server= None, recv_type="block"):
 					sentence += token
 					if token in sentence_markers:
 						message = json.dumps({"type": "stream", "sentence": sentence, "ended": False})
-						print("message", message)
 						server.send_message(message)
 						time.sleep(0.1)
 						sentence = ""
@@ -352,6 +351,7 @@ def check_for_GPT():
 		return -4
 
 	GPT_AVAILABLE = True
+	print("GPT AVAILABLE")
 	return 0
 
 def check_for_Gemini():
@@ -378,6 +378,7 @@ def check_for_Gemini():
 		return -4
 
 	GEMINI_AVAILABLE = True
+	print("GEMINI AVAILABLE")
 	return 0
 
 server = Server(5042)

@@ -359,7 +359,7 @@ class ScriptProcessor:
 						self.send_message_to_llm_client(llm_message(prompt, "gpt"))
 					elif node["type"] == "gemini_decision":
 						self.send_message_to_llm_client(llm_message(prompt, "gemini"))
-					while len(self.llm_client.response) == 0:
+					while self.llm_client.response == None or len(self.llm_client.response) == 0:
 						time.sleep(0.1)
 					llm_response = self.llm_client.response
 					self.llm_client.response = ""
@@ -434,7 +434,7 @@ class ScriptProcessor:
 					self.send_message_to_llm_client(llm_message(prompt, "gpt"))
 				elif node["type"] == "gemini_variable":
 					self.send_message_to_llm_client(llm_message(prompt, "gemini"))
-				while len(self.llm_client.response) == 0:
+				while self.llm_client.response == None or len(self.llm_client.response) == 0:
 					time.sleep(0.1)
 				print("LLM response", self.llm_client.response)
 				llm_response = self.llm_client.response

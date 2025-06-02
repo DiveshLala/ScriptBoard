@@ -344,6 +344,10 @@ class Scene(QGraphicsScene):
 			if isinstance(n, DialogNode):
 				if n.icon_type == "robot_" + llm:
 					return True
+				elif n.icon_type == llm + "_variable":
+					return True
+				elif n.icon_type == llm + "_decision":
+					return True
 		return False
 
 	
