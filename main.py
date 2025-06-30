@@ -1068,7 +1068,7 @@ def playScript(window, nodeID=None):
 		msgBox.exec()
 		window.saveScript()
 
-server = Server("localhost", 5050)
+server = Server(5050)
 
 llm_client = Client("localhost", 5042)
 t2 = threading.Thread(target=llm_client.start_connecting, args=())

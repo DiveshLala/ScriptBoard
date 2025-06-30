@@ -3,9 +3,8 @@ import traceback
 import json
 
 class Server:
-	def __init__(self, host, port):
+	def __init__(self, port):
 		# Server Address (port)
-		self.HOST = host
 		self.PORT = port
 		self.soc = None
 		self.processor = None
@@ -21,9 +20,11 @@ class Server:
 		# Establishing a server
 		self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self.soc.bind((self.HOST, self.PORT))
+		hostname = socket.gethostname()
+		ip_address = socket.gethostbyname(hostname)
+		self.soc.bind((hostname, self.PORT))
 		self.soc.listen()
-		print('Waiting for connection...')
+		print('Waiting for connection on ', ip_address, self.PORT)
 
 		try:
 			while True:
