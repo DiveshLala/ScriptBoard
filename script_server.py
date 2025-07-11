@@ -20,11 +20,9 @@ class Server:
 		# Establishing a server
 		self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		hostname = socket.gethostname()
-		ip_address = socket.gethostbyname(hostname)
-		self.soc.bind((hostname, self.PORT))
+		self.soc.bind(('', self.PORT))
 		self.soc.listen()
-		print('Waiting for connection on ', ip_address, self.PORT)
+		print('Waiting for connection on ', self.PORT)
 
 		try:
 			while True:
