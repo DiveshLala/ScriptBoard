@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QTextEdit, QSpinBox, QListView, QDialogButtonBox, QMessageBox, QVBoxLayout, QHBoxLayout, QLabel, QDialog, QLineEdit, QPushButton, QAbstractItemView, QComboBox, QFrame
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QTextCursor, QTextCharFormat, QFont
 
 class VariableUpdateWindow(QDialog):
 	def __init__(self, initUpdate, variableList, environment):
@@ -266,10 +266,23 @@ class LLMVariableUpdateWindow(QDialog):
 		self.label.setFixedWidth(300)
 		self.label.setText(initLabel)
 
+		promptLayout = QHBoxLayout()
 		self.promptBox = QTextEdit()
 		self.promptBox.setFixedHeight(500)
 		self.promptBox.setFixedWidth(800)
-		self.promptBox.setText(initPromptText)
+		self.setInitialPrompt(initPromptText)
+
+		insertLayout = QVBoxLayout()
+		self.inputVariableCombo = QComboBox()
+		self.inputVariableCombo.addItems([x[0] for x in variableList])
+		self.insertButton = QPushButton("Insert variable")
+		self.insertButton.clicked.connect(self.insertVariableString)
+		insertLayout.addStretch(1)
+		insertLayout.addWidget(self.inputVariableCombo)
+		insertLayout.addWidget(self.insertButton)
+		insertLayout.addStretch(1)
+		promptLayout.addWidget(self.promptBox)
+		promptLayout.addLayout(insertLayout)
 
 		self.participantCombo = QComboBox()
 		self.participantCombo.setFixedWidth(300)
@@ -306,7 +319,7 @@ class LLMVariableUpdateWindow(QDialog):
 		layout.addWidget(QLabel("Label"))
 		layout.addWidget(self.label)
 		layout.addWidget(QLabel("Prompt"))
-		layout.addWidget(self.promptBox)
+		layout.addLayout(promptLayout)
 		layout.addWidget(QLabel("Information to be added below prompt"))
 		layout.addWidget(QLabel("Whose utterances to add?"))
 		layout.addWidget(self.participantCombo)
@@ -349,3 +362,56 @@ class LLMVariableUpdateWindow(QDialog):
 		for v in self.variableList:
 			if v[0] == self.variableCombo.currentText():
 				self.variableType.setText(v[1])
+	
+	def insertVariableString(self):
+		cursor = self.getCursor("Bold")
+		self.insertText(cursor, "Variable(" + str(self.inputVariableCombo.currentText()) + ")")
+		#change back to regular cursor
+		cursor = self.getCursor()
+	
+	def getCursor(self, type="Normal"):
+		cursor = QTextCursor(self.promptBox.textCursor())
+		format = QTextCharFormat(cursor.charFormat())
+		if type == "Bold":
+			format.setFontWeight(QFont.Bold)
+		else:
+			format.setFontWeight(QFont.Normal)
+		cursor.setCharFormat(format)
+		self.promptBox.setTextCursor(cursor)
+		return cursor
+	
+	def insertText(self, cursor, text):
+		self.promptBox.moveCursor(QTextCursor.End)
+		cursor.insertText(text)
+		self.promptBox.moveCursor(QTextCursor.End)
+	
+	def setInitialPrompt(self, text):
+
+		if len(text) == 0:
+			return
+
+		varStartIndices = [i for i in range(len(text)) if text.startswith("Variable(", i)]
+
+		if len(varStartIndices) == 0:
+			self.promptBox.setText(text)
+		else:
+			nonVarStart = 0
+
+			for i in varStartIndices:
+				#set normal font
+				cursor = self.getCursor()
+				self.insertText(cursor, text[nonVarStart:i])
+
+				#set bold font
+				cursor = self.getCursor("Bold")
+				endIndex = text.find(")", i) + 1
+				varText = text[i:endIndex]
+				self.insertText(cursor, varText)
+
+				nonVarStart = endIndex
+	
+			cursor = self.getCursor()
+			self.insertText(cursor, text[endIndex:len(text)])
+
+		# #change to normal font
+		cursor = self.getCursor()

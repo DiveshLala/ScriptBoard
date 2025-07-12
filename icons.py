@@ -568,7 +568,7 @@ class LLMDecisionNode(DialogNode):
 		self.conditions = []
 	
 	def mouseDoubleClickEvent(self, e):
-		dlg = llm_decision.LLMDecisionWindow(self.prompt, self.labelText, [c.condition for c in self.connectors if isinstance(c, ConditionOutputJoint) and c.condition.comparator != "is other"])
+		dlg = llm_decision.LLMDecisionWindow(self.prompt, self.labelText, [c.condition for c in self.connectors if isinstance(c, ConditionOutputJoint) and c.condition.comparator != "is other"], self.parent_scene.getVariables())
 		accept = dlg.exec()
 		if accept:
 

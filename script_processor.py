@@ -354,6 +354,7 @@ class ScriptProcessor:
 				else:
 					prompt_info = node["prompt"]
 					x = DialogPrompt(prompt_info["text prompt"], prompt_info["speakers"], prompt_info["history"], prompt_info["turns"])
+					x.parseVariables(self.variable_dict)
 					prompt = self.create_llm_prompt(x)
 					if node["type"] == "gpt_decision":
 						self.send_message_to_llm_client(llm_message(prompt, "gpt"))
@@ -429,6 +430,7 @@ class ScriptProcessor:
 				output_node_id = self.get_output_node_id(node)
 				prompt_info = node["prompt"]
 				x = DialogPrompt(prompt_info["text prompt"], prompt_info["speakers"], prompt_info["history"], prompt_info["turns"])
+				x.parseVariables(self.variable_dict)
 				prompt = self.create_llm_prompt(x)
 				if node["type"] == "gpt_variable":
 					self.send_message_to_llm_client(llm_message(prompt, "gpt"))
