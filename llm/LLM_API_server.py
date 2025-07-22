@@ -301,7 +301,6 @@ def send_Gemini_request(input_prompt, server= None, recv_type="block"):
 def send_LMStudio_request(input_prompt, server = None, recv_type="block"):
 	global LMSTUDIO_ADDRESS
 	lm_ip = "http://" + LMSTUDIO_ADDRESS["ip"] + ":1234/v1"
-
 	client = OpenAI(
 		base_url= lm_ip,
 		api_key="lm-studio"  # Any string works
@@ -512,7 +511,6 @@ def check_for_LMStudio():
 	if LMSTUDIO_ADDRESS["ip"] == None:
 		return -3
 	
-	print(LMSTUDIO_ADDRESS)
 	response = send_LMStudio_request("Hello, what is your name?")
 
 	if response == None:
