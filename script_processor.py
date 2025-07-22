@@ -285,7 +285,7 @@ class ScriptProcessor:
 					return
 				output_node_id = random.choice(node_outputs)
 				node_id = output_node_id
-			elif node["type"] == "robot_gpt" or node["type"] == "robot_gemini":
+			elif node["type"] == "robot_gpt" or node["type"] == "robot_gemini" or node["type"] == "robot_lmstudio":
 				output_node_id = self.get_output_node_id(node)
 				barge_in = [c["connectedNodeID"] for c in node["connectors"] if c["type"] == "condition_output" and c["condition"]["target"] == "Barge-in"]
 				gaze = node["gaze"]
@@ -303,6 +303,8 @@ class ScriptProcessor:
 					self.send_message_to_llm_client(llm_message(prompt, "gpt", recv_type="stream"))
 				elif node["type"] == "robot_gemini":
 					self.send_message_to_llm_client(llm_message(prompt, "gemini", recv_type="stream"))
+				elif node["type"] == "robot_lmstudio":
+					self.send_message_to_llm_client(llm_message(prompt, "lmstudio", recv_type="stream"))
 				self.llm_client.streaming = True
 
 				#gaze for each sentence
@@ -457,6 +459,7 @@ class ScriptProcessor:
 								self.variable_dict[variable][1] = False
 						else:
 							self.variable_dict[variable][1] = llm_response
+						print("updated", self.variable_dict[variable])
 					except ValueError as e:
 						print(e)
 						print("Could not update variable, wrong type!")

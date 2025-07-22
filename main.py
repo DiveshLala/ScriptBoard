@@ -38,7 +38,7 @@ import window_classes.monitoring_window as monitoring_window
 import window_classes.llm_list_window as llm_list_window
 import script_loader
 from scene import Scene
-from llm.LLM_API_server import check_for_GPT, check_for_Gemini
+from llm.LLM_API_server import check_for_GPT, check_for_Gemini, check_for_LMStudio
 
 
 class ScriptMainWindow(QMainWindow):
@@ -94,7 +94,7 @@ class ScriptMainWindow(QMainWindow):
 		action_group = QActionGroup(self)
 		action_group.setExclusive(True)
 
-		options = ["ChatGPT", "Gemini"]
+		options = ["ChatGPT", "Gemini", "LMStudio"]
 		for option in options:
 			action = QAction(option, self, checkable=True)
 			action.triggered.connect(lambda checked, opt=option: self.updateLLMType(opt, "talk"))
@@ -161,6 +161,20 @@ class ScriptMainWindow(QMainWindow):
 				pixmap= QPixmap('pics/gemini_variable.png')
 				icon_type = "gemini_variable"	
 				tooltip = "Gemini variable node"
+		
+		elif llm == "LMStudio":
+			if nodeType == "talk":
+				pixmap= QPixmap('pics/robot_lmstudio.png')
+				icon_type = "robot_lmstudio"
+				tooltip = "Robot LM Studio node"
+			# elif nodeType == "decision":
+			# 	pixmap= QPixmap('pics/gemini_decision.png')
+			# 	icon_type = "gemini_decision"
+			# 	tooltip = "Gemini decision node"	
+			# elif nodeType == "variable":
+			# 	pixmap= QPixmap('pics/gemini_variable.png')
+			# 	icon_type = "gemini_variable"	
+			# 	tooltip = "Gemini variable node"
 
 		if nodeType == "talk":
 			self.robot_llm_icon.set_pic(pixmap)
@@ -1020,6 +1034,22 @@ def playScript(window, nodeID=None):
 							dlg = QMessageBox()
 							dlg.setWindowTitle("Run without LLM?")
 							dlg.setText("This script uses Gemini but this is not currently available. Run anyway?")
+							dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+							ret = dlg.exec()
+							if ret == QMessageBox.Yes:
+								break
+							else:
+								return
+						break
+				
+				for w in windows:
+					if w.scene.doesScriptUseLLM("lmstudio"):
+						# check for LM Studio
+						LMStudio_available = check_for_LMStudio()
+						if LMStudio_available != 0:
+							dlg = QMessageBox()
+							dlg.setWindowTitle("Run without LLM?")
+							dlg.setText("This script uses LM Studio but this is not currently available. Run anyway?")
 							dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 							ret = dlg.exec()
 							if ret == QMessageBox.Yes:

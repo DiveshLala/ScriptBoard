@@ -4,4 +4,6 @@ GPT_MODEL=gpt-4o (or other model)
 GEMINI_KEY=gemini_key_here
 GEMINI_MODEL=gemini-2.0-flash (or other model)
 
+LMSTUDIO_ADDRESS=IP address of PC where LM Studio is running (localhost is OK)
+
 # remember to save the actual login file as "llm_login_info.txt"

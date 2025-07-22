@@ -451,6 +451,20 @@ class RobotGeminiNode(RobotLLMNode):
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		return infoDict
 
+class RobotLMStudioNode(RobotLLMNode):
+
+	def __init__(self, id, width, height, parent_scene):
+		super(RobotLMStudioNode, self).__init__(id, width, height, parent_scene)
+	
+	def retrieveInfo(self):
+		infoDict = super().retrieveInfo()
+		infoDict["type"] = "robot_lmstudio"
+		infoDict["label"] = self.labelText
+		infoDict["barge-in"] = self.bargeIn
+		infoDict["gaze"] = self.gaze
+		infoDict["prompt"] = self.prompt.retrieveInfo()
+		return infoDict
+
 
 class VariableUpdateNode(DialogNode):
 

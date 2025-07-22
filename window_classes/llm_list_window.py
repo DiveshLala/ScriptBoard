@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QVBoxLayout, QLabel, QDialog, QPushButton
 from PyQt5 import QtCore
-from llm.LLM_API_server import check_for_GPT, check_for_Gemini
+from llm.LLM_API_server import check_for_GPT, check_for_Gemini, check_for_LMStudio
 import time
 
 class LLMListWindow(QDialog):
@@ -24,7 +24,7 @@ class LLMListWindow(QDialog):
 		self.setLayout(layout)
 	
 	def loadLLMList(self):
-		LLMs = ["GPT", "Gemini"]
+		LLMs = ["GPT", "Gemini", "LM Studio"]
 		rowCt = 0
 		for llm in LLMs:
 			self.LLMList.insertRow(rowCt)
@@ -61,6 +61,8 @@ class LLMListWindow(QDialog):
 			available = check_for_GPT()		
 		elif llm == "Gemini":
 			available = check_for_Gemini()
+		elif llm == "LM Studio":
+			available = check_for_LMStudio()
 			
 		if available == -1:
 			self.messageLabel.setText("Python packages are not installed. Use pip to install.")
@@ -73,6 +75,9 @@ class LLMListWindow(QDialog):
 			status = QTableWidgetItem("Not available")
 		elif available == -4:
 			self.messageLabel.setText("API details are incorrect.  Please check your configuration file.")
+			status = QTableWidgetItem("Not available")
+		elif available == -5:
+			self.messageLabel.setText("LM Studio server is not running. Please load a model inside the application.")
 			status = QTableWidgetItem("Not available")
 		else:
 			self.messageLabel.setText("")	

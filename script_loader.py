@@ -92,6 +92,15 @@ def loadScript(window,scene,jsondata=None):
 			node.prompt = prompt
 			node.gaze = data[i]["gaze"]
 			node.bargeIn = data[i]["barge-in"]
+		elif nodeType == "robot_lmstudio":
+			pixmap = QPixmap("pics/robot_lmstudio.png")
+			node = RobotLMStudioNode(id, pixmap.width(), pixmap.height(), scene)
+			node.labelText = data[i]["label"]
+			promptInfo = data[i]["prompt"]
+			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
+			node.prompt = prompt
+			node.gaze = data[i]["gaze"]
+			node.bargeIn = data[i]["barge-in"]
 		elif nodeType == "human":
 			pixmap = QPixmap("pics/human.png")
 			node = HumanNode(id, pixmap.width(), pixmap.height(), scene)

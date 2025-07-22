@@ -116,6 +116,8 @@ class Scene(QGraphicsScene):
 			node = RobotGPTNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 		elif icon_type == "robot_gemini":
 			node = RobotGeminiNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+		elif icon_type == "robot_lmstudio":
+			node = RobotLMStudioNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 		elif icon_type == "human_target":
 			node = HumanTargetNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 		elif icon_type == "variable_update":

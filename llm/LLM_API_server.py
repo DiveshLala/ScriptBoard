@@ -5,6 +5,7 @@ import re
 import time
 import threading
 import json
+import traceback
 
 
 try:
@@ -21,11 +22,14 @@ except ImportError:
 	GOOGLE_GENAI_PACKAGE_AVAILABLE = False
 	print("Need to install Google packages to use Gemini!")
 
+
 GPT_API_INFO = {}
 GEMINI_API_INFO = {}
+LMSTUDIO_ADDRESS = {}
 
 GPT_AVAILABLE = False
 GEMINI_AVAILABLE = False
+LMSTUDIO_AVAILABLE = False
 
 #class for sending message to server
 class Server():
@@ -101,6 +105,8 @@ class Server():
 			self.process_GPT_prompt(prompt, recv_type)
 		elif llm == "gemini" and GEMINI_AVAILABLE:
 			self.process_Gemini_prompt(prompt, recv_type)
+		elif llm == "lmstudio" and LMSTUDIO_AVAILABLE:
+			self.process_LMStudio_prompt(prompt, recv_type)
 		else:
 			message = json.dumps({"type": "unavailable", "sentence": "", "ended": True})
 			self.send_message(message)
@@ -154,6 +160,31 @@ class Server():
 		elif recv_type == "stream":
 			response = send_Gemini_request(prompt, server = self, recv_type="stream")
 		
+		print("==========================================================")
+	
+	def process_LMStudio_prompt(self, prompt, recv_type):
+		print("=======================================================")
+		print("RECEIVE TYPE", recv_type)
+		print(prompt)
+		start_time = time.time()
+		if recv_type == "block":
+			response = send_LMStudio_request(prompt)
+			print(response)
+			if response != None:
+				print("Response time for", recv_type, ":", time.time() - start_time)
+				print("Response", response, "\n")
+				message = json.dumps({"type": "block", "sentence": response, "ended": True})
+
+			#ensures that threads don't get merged
+			while(self.send_lock):
+				time.sleep(0.1)
+			self.send_lock = True
+			self.send_message(message)
+			self.send_lock = False
+		
+		elif recv_type == "stream":
+			response = send_LMStudio_request(prompt, server = self, recv_type="stream")
+
 		print("==========================================================")
 
 def send_GPT_request(input_prompt, server = None, recv_type="block"):
@@ -266,6 +297,64 @@ def send_Gemini_request(input_prompt, server= None, recv_type="block"):
 			print(e)
 			return None
 
+
+def send_LMStudio_request(input_prompt, server = None, recv_type="block"):
+	global LMSTUDIO_ADDRESS
+	lm_ip = "http://" + LMSTUDIO_ADDRESS["ip"] + ":1234/v1"
+
+	client = OpenAI(
+		base_url= lm_ip,
+		api_key="lm-studio"  # Any string works
+	)
+
+	if recv_type == "block":
+		try:
+			response = client.chat.completions.create(
+				model="your-model-id",
+				messages=[
+					{"role": "system", "content": "You are a helpful assistant."},
+					{"role": "user", "content": "Tell me a joke."}
+				]
+			)
+			r = response.choices[0].message.content
+			return r
+		except Exception as e:
+			return None
+	
+	elif recv_type == 'stream':
+		try:
+			sentence = ""
+			sentence_markers = [".", "。", "?", "？", "!", "！"]
+
+			response = client.chat.completions.create(
+				model="your-model-id",
+				messages=[
+					{"role": "system", "content": "You are a helpful assistant."},
+					{"role": "user", "content": "Tell me a joke."}
+				],
+				stream = True
+			)
+
+			for chunk in response:
+
+				if chunk.choices[0].delta.content == None:
+					break
+
+				for token in chunk.choices[0].delta.content:
+					sentence += token
+					if token in sentence_markers:
+						message = json.dumps({"type": "stream", "sentence": sentence, "ended": False})
+						server.send_message(message)
+						time.sleep(0.1)
+						sentence = ""
+
+			message = json.dumps({"type": "stream", "sentence": "", "ended": True})
+			server.send_message(message)
+		except Exception as e:
+			print(e)
+			traceback.print_exc()
+			return None
+
 #return either None or a dictionary with the information 
 def get_API_information(api_name, config_file):
 
@@ -327,6 +416,30 @@ def get_API_information(api_name, config_file):
 
 		return api_info
 
+	elif api_name == "lmstudio":
+	
+		try:
+			f = open(config_file, "r").readlines()
+		except FileNotFoundError:
+			print("Missing API login information file!", config_file)
+			return None
+
+		ip_address = None
+
+		for x in f:
+			if len(x.strip()) == 0:
+				continue
+
+			element = x.split("=")[0]
+			value = x.split("=")[1].strip()
+
+			if element == "LMSTUDIO_ADDRESS":
+				ip_address = value
+		
+		api_info = {"api": "lmstudio", "ip": ip_address}
+
+		return api_info
+
 def check_for_GPT():
 	global GPT_API_INFO
 	global GPT_AVAILABLE
@@ -344,8 +457,8 @@ def check_for_GPT():
 
 	if GPT_API_INFO["key"] == None or GPT_API_INFO["model"] == None:
 		return -3
-
-	response = send_GPT_request("Hello, what is your name?", "gpt")
+	
+	response = send_GPT_request("Hello, what is your name?")
 
 	if response == None:
 		return -4
@@ -372,13 +485,41 @@ def check_for_Gemini():
 	if GEMINI_API_INFO["key"] == None or GEMINI_API_INFO["model"] == None:
 		return -3
 
-	response = send_Gemini_request("Hello, what is your name?", "gemini")
+	response = send_Gemini_request("Hello, what is your name?")
 
 	if response == None:
 		return -4
 
 	GEMINI_AVAILABLE = True
 	print("GEMINI AVAILABLE")
+	return 0
+
+def check_for_LMStudio():
+	global OPEN_AI_PACKAGE_AVAILABLE
+	global LMSTUDIO_AVAILABLE
+	global LMSTUDIO_ADDRESS
+
+	if not OPEN_AI_PACKAGE_AVAILABLE:
+		return -1
+	
+	config_file = "./llm/llm_login_info.txt"
+
+	if not os.path.exists(config_file):
+		return -2
+	
+	LMSTUDIO_ADDRESS = get_API_information("lmstudio", config_file)
+
+	if LMSTUDIO_ADDRESS["ip"] == None:
+		return -3
+	
+	print(LMSTUDIO_ADDRESS)
+	response = send_LMStudio_request("Hello, what is your name?")
+
+	if response == None:
+		return -5
+
+	LMSTUDIO_AVAILABLE = True
+	print("LM STUDIO AVAILABLE")
 	return 0
 
 server = Server(5042)
