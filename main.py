@@ -40,7 +40,8 @@ import script_loader
 from scene import Scene
 from llm.LLM_API_server import check_for_GPT, check_for_Gemini, check_for_LMStudio
 from icons import RobotLLMNode, LLMDecisionNode, LLMVariableUpdateNode
-
+import ctypes
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("ScriptBoard")
 
 class ScriptMainWindow(QMainWindow):
 
@@ -65,6 +66,7 @@ class ScriptMainWindow(QMainWindow):
 		self.initializeVariables()
 		self.setSubWindows()
 		self.openInitialScript()
+		self.setWindowIcon(QIcon('pics/favicon.ico'))
 	
 	def initializeVariables(self):
 		self.idctr = 0
@@ -1119,6 +1121,7 @@ t2.daemon = True
 t2.start()
 
 app = QApplication(sys.argv)
+app.setWindowIcon(QIcon('pics/favicon.ico'))
 
 #main window
 mainWindow = ScriptMainWindow()
