@@ -80,17 +80,17 @@ class Scene(QGraphicsScene):
 		
 		elif event.source().icon_type == "gpt_decision":
 			pixmap = QPixmap("pics/gpt_decision.png")
-			node = GPTDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+			node = LLMDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "gpt")
 			node.addConnector(drop_pos.x(), drop_pos.y(), -12, node.height/2, "input")
 		
 		elif event.source().icon_type == "gemini_decision":
 			pixmap = QPixmap("pics/gemini_decision.png")
-			node = GeminiDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+			node = LLMDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "gemini")
 			node.addConnector(drop_pos.x(), drop_pos.y(), -12, node.height/2, "input")
 		
 		elif event.source().icon_type == "lmstudio_decision":
 			pixmap = QPixmap("pics/lmstudio_decision.png")
-			node = LMStudioDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+			node = LLMDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "lmstudio")
 			node.addConnector(drop_pos.x(), drop_pos.y(), -12, node.height/2, "input")
 
 		elif event.source().icon_type == "random_decision":
@@ -118,11 +118,11 @@ class Scene(QGraphicsScene):
 		if icon_type == "robot":
 			node = RobotNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 		elif icon_type == "robot_gpt":
-			node = RobotGPTNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+			node = RobotLLMNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "gpt")
 		elif icon_type == "robot_gemini":
-			node = RobotGeminiNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+			node = RobotLLMNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "gemini")
 		elif icon_type == "robot_lmstudio":
-			node = RobotLMStudioNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+			node = RobotLLMNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "lmstudio")
 		elif icon_type == "human_target":
 			node = HumanTargetNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 		elif icon_type == "variable_update":
@@ -146,11 +146,11 @@ class Scene(QGraphicsScene):
 		elif icon_type == "tts_parameters":
 			node = TTSParameterNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 		elif icon_type == "gpt_variable":
-			node = GPTVariableUpdateNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+			node = LLMVariableUpdateNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "gpt")
 		elif icon_type == "gemini_variable":
-			node = GeminiVariableUpdateNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+			node = LLMVariableUpdateNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "gemini")
 		elif icon_type == "lmstudio_variable":
-			node = LMStudioVariableUpdateNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+			node = LLMVariableUpdateNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "lmstudio")
 		elif icon_type == "python_function":
 			node = PythonFunctionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 		elif icon_type == "enter_subseq":
@@ -447,7 +447,7 @@ class Scene(QGraphicsScene):
 				elif n.icon_type == "gpt_decision":
 					#conditions and connectors
 					pixmap = QPixmap("pics/gpt_decision.png")
-					newNode = GPTDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+					newNode = LLMDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "gpt")
 					offset = -30
 					for c in n.connectors:
 						if isinstance(c, ConditionOutputJoint):
@@ -459,7 +459,7 @@ class Scene(QGraphicsScene):
 				elif n.icon_type == "gemini_decision":
 					#conditions and connectors
 					pixmap = QPixmap("pics/gemini_decision.png")
-					newNode = GeminiDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+					newNode = LLMDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "gemini")
 					offset = -30
 					for c in n.connectors:
 						if isinstance(c, ConditionOutputJoint):
@@ -471,7 +471,7 @@ class Scene(QGraphicsScene):
 				elif n.icon_type == "lmstudio_decision":
 					#conditions and connectors
 					pixmap = QPixmap("pics/lmstudio_decision.png")
-					newNode = LMStudioDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+					newNode = LLMDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "lmstudio")
 					offset = -30
 					for c in n.connectors:
 						if isinstance(c, ConditionOutputJoint):
@@ -514,7 +514,7 @@ class Scene(QGraphicsScene):
 				pastedNodes.append(newNode)
 			
 				#add barge in connector for robot node
-				if (isinstance(n, RobotNode) or isinstance(n, RobotGPTNode)) and n.bargeIn:
+				if (isinstance(n, RobotNode) or isinstance(n, RobotLLMNode)) and n.bargeIn:
 					nodeXPos = newNode.pos().x()
 					nodeYPos =  newNode.pos().y()
 					cond = Condition()

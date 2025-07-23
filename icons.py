@@ -375,11 +375,12 @@ class RobotNode(DialogNode):
 
 class RobotLLMNode(RobotNode):
 
-	def __init__(self, id, width, height, parent_scene):
+	def __init__(self, id, width, height, parent_scene, llm):
 		super(RobotLLMNode, self).__init__(id, width, height, parent_scene)
 		self.prompt = DialogPrompt("", "None", "Whole dialog history", 1)
 		self.bargeIn = False
 		self.gaze = ""
+		self.llm = llm
 	
 	def mouseDoubleClickEvent(self, e):
 		dlg = robot_window.TalkLLMWindow(self.prompt, self.labelText, self.bargeIn, [x[0] for x in self.parent_scene.getEnvironment()], [x[0] for x in self.parent_scene.getVariables()], self.gaze)
@@ -422,49 +423,15 @@ class RobotLLMNode(RobotNode):
 		else:
 			if self.displayedLabel != None:
 				self.parent_scene.removeItem(self.displayedLabel)
-
-class RobotGPTNode(RobotLLMNode):
-
-	def __init__(self, id, width, height, parent_scene):
-		super(RobotGPTNode, self).__init__(id, width, height, parent_scene)
 	
 	def retrieveInfo(self):
 		infoDict = super().retrieveInfo()
-		infoDict["type"] = "robot_gpt"
+		infoDict["type"] = "robot_" + self.llm
 		infoDict["label"] = self.labelText
 		infoDict["barge-in"] = self.bargeIn
 		infoDict["gaze"] = self.gaze
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		return infoDict
-
-class RobotGeminiNode(RobotLLMNode):
-
-	def __init__(self, id, width, height, parent_scene):
-		super(RobotGeminiNode, self).__init__(id, width, height, parent_scene)
-	
-	def retrieveInfo(self):
-		infoDict = super().retrieveInfo()
-		infoDict["type"] = "robot_gemini"
-		infoDict["label"] = self.labelText
-		infoDict["barge-in"] = self.bargeIn
-		infoDict["gaze"] = self.gaze
-		infoDict["prompt"] = self.prompt.retrieveInfo()
-		return infoDict
-
-class RobotLMStudioNode(RobotLLMNode):
-
-	def __init__(self, id, width, height, parent_scene):
-		super(RobotLMStudioNode, self).__init__(id, width, height, parent_scene)
-	
-	def retrieveInfo(self):
-		infoDict = super().retrieveInfo()
-		infoDict["type"] = "robot_lmstudio"
-		infoDict["label"] = self.labelText
-		infoDict["barge-in"] = self.bargeIn
-		infoDict["gaze"] = self.gaze
-		infoDict["prompt"] = self.prompt.retrieveInfo()
-		return infoDict
-
 
 class VariableUpdateNode(DialogNode):
 
@@ -575,11 +542,12 @@ class VariableDecisionNode(DialogNode):
 
 class LLMDecisionNode(DialogNode):
 
-	def __init__(self, id, width, height, parent_scene):
+	def __init__(self, id, width, height, parent_scene, llm):
 		super(LLMDecisionNode, self).__init__(id, width, height, parent_scene)
 		self.parent_scene = parent_scene
 		self.prompt = DialogPrompt("", "None", "Whole dialog history", 1)
 		self.conditions = []
+		self.llm = llm
 	
 	def mouseDoubleClickEvent(self, e):
 		dlg = llm_decision.LLMDecisionWindow(self.prompt, self.labelText, [c.condition for c in self.connectors if isinstance(c, ConditionOutputJoint) and c.condition.comparator != "is other"], self.parent_scene.getVariables())
@@ -627,44 +595,13 @@ class LLMDecisionNode(DialogNode):
 			self.labelText = dlg.label.text()
 			self.updateDialogLabel()
 			self.parent_scene.setSceneChanged(True)
-
-
-class GPTDecisionNode(LLMDecisionNode):
-
-	def __init__(self, id, width, height, parent_scene):
-		super(GPTDecisionNode, self).__init__(id, width, height, parent_scene)
 	
 	def retrieveInfo(self):
 		infoDict = super().retrieveInfo()
-		infoDict["type"] = "gpt_decision"
+		infoDict["type"] = self.llm + "_decision"
 		infoDict["label"] = self.labelText
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		return infoDict
-
-class GeminiDecisionNode(LLMDecisionNode):
-
-	def __init__(self, id, width, height, parent_scene):
-		super(GeminiDecisionNode, self).__init__(id, width, height, parent_scene)
-	
-	def retrieveInfo(self):
-		infoDict = super().retrieveInfo()
-		infoDict["type"] = "gemini_decision"
-		infoDict["label"] = self.labelText
-		infoDict["prompt"] = self.prompt.retrieveInfo()
-		return infoDict
-
-class LMStudioDecisionNode(LLMDecisionNode):
-
-	def __init__(self, id, width, height, parent_scene):
-		super(LMStudioDecisionNode, self).__init__(id, width, height, parent_scene)
-	
-	def retrieveInfo(self):
-		infoDict = super().retrieveInfo()
-		infoDict["type"] = "lmstudio_decision"
-		infoDict["label"] = self.labelText
-		infoDict["prompt"] = self.prompt.retrieveInfo()
-		return infoDict
-
 
 class RandomDecisionNode(DialogNode):
 
@@ -1000,10 +937,11 @@ class TTSParameterNode(DialogNode):
 
 
 class LLMVariableUpdateNode(DialogNode):
-	def __init__(self, id, width, height, parent_scene):
+	def __init__(self, id, width, height, parent_scene, llm):
 		super(LLMVariableUpdateNode, self).__init__(id, width, height, parent_scene)
 		self.prompt = DialogPrompt("", "None", "Whole dialog history", 1)
 		self.variable = None
+		self.llm = llm
 
 	def mouseDoubleClickEvent(self, e):
 		dlg = variable_update.LLMVariableUpdateWindow(self.labelText, self.prompt, self.variable, self.parent_scene.getVariables())
@@ -1013,41 +951,11 @@ class LLMVariableUpdateNode(DialogNode):
 			self.variable = dlg.variableCombo.currentText()
 			self.labelText = dlg.label.text()
 		self.updateDialogLabel()
-
-
-class GPTVariableUpdateNode(LLMVariableUpdateNode):
-	def __init__(self, id, width, height, parent_scene):
-		super(GPTVariableUpdateNode, self).__init__(id, width, height, parent_scene)
-
+	
 	def retrieveInfo(self):
 		infoDict = super().retrieveInfo()
 		infoDict["variable"] = self.variable
-		infoDict["type"] = "gpt_variable"
-		infoDict["prompt"] = self.prompt.retrieveInfo()
-		infoDict["label"] = self.labelText
-		print("label", self.labelText)
-		return infoDict
-
-class GeminiVariableUpdateNode(LLMVariableUpdateNode):
-	def __init__(self, id, width, height, parent_scene):
-		super(GeminiVariableUpdateNode, self).__init__(id, width, height, parent_scene)
-
-	def retrieveInfo(self):
-		infoDict = super().retrieveInfo()
-		infoDict["variable"] = self.variable
-		infoDict["type"] = "gemini_variable"
-		infoDict["prompt"] = self.prompt.retrieveInfo()
-		infoDict["label"] = self.labelText
-		return infoDict
-
-class LMStudioVariableUpdateNode(LLMVariableUpdateNode):
-	def __init__(self, id, width, height, parent_scene):
-		super(LMStudioVariableUpdateNode, self).__init__(id, width, height, parent_scene)
-
-	def retrieveInfo(self):
-		infoDict = super().retrieveInfo()
-		infoDict["variable"] = self.variable
-		infoDict["type"] = "lmstudio_variable"
+		infoDict["type"] = self.llm + "_variable"
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		infoDict["label"] = self.labelText
 		return infoDict

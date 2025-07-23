@@ -76,7 +76,7 @@ def loadScript(window,scene,jsondata=None):
 				print("Barge in tag not found. Ignoring...")
 		elif nodeType == "robot_gpt":
 			pixmap = QPixmap("pics/robot_gpt.png")
-			node = RobotGPTNode(id, pixmap.width(), pixmap.height(), scene)
+			node = RobotLLMNode(id, pixmap.width(), pixmap.height(), scene, "gpt")
 			node.labelText = data[i]["label"]
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
@@ -85,7 +85,7 @@ def loadScript(window,scene,jsondata=None):
 			node.bargeIn = data[i]["barge-in"]
 		elif nodeType == "robot_gemini":
 			pixmap = QPixmap("pics/robot_gemini.png")
-			node = RobotGeminiNode(id, pixmap.width(), pixmap.height(), scene)
+			node = RobotLLMNode(id, pixmap.width(), pixmap.height(), scene, "gemini")
 			node.labelText = data[i]["label"]
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
@@ -94,7 +94,7 @@ def loadScript(window,scene,jsondata=None):
 			node.bargeIn = data[i]["barge-in"]
 		elif nodeType == "robot_lmstudio":
 			pixmap = QPixmap("pics/robot_lmstudio.png")
-			node = RobotLMStudioNode(id, pixmap.width(), pixmap.height(), scene)
+			node = RobotLLMNode(id, pixmap.width(), pixmap.height(), scene, "lmstudio")
 			node.labelText = data[i]["label"]
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
@@ -133,21 +133,21 @@ def loadScript(window,scene,jsondata=None):
 			node.num_decisions = data[i]["number decisions"]
 		elif nodeType == "gpt_decision":
 			pixmap = QPixmap("pics/gpt_decision.png")
-			node = GPTDecisionNode(id, pixmap.width(), pixmap.height(), scene)
+			node = LLMDecisionNode(id, pixmap.width(), pixmap.height(), scene, "gpt")
 			node.labelText = data[i]["label"]
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
 			node.prompt = prompt
 		elif nodeType == "gemini_decision":
 			pixmap = QPixmap("pics/gemini_decision.png")
-			node = GeminiDecisionNode(id, pixmap.width(), pixmap.height(), scene)
+			node = LLMDecisionNode(id, pixmap.width(), pixmap.height(), scene, "gemini")
 			node.labelText = data[i]["label"]
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
 			node.prompt = prompt
 		elif nodeType == "lmstudio_decision":
 			pixmap = QPixmap("pics/lmstudio_decision.png")
-			node = LMStudioDecisionNode(id, pixmap.width(), pixmap.height(), scene)
+			node = LLMDecisionNode(id, pixmap.width(), pixmap.height(), scene, "lmstudio")
 			node.labelText = data[i]["label"]
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
@@ -176,7 +176,7 @@ def loadScript(window,scene,jsondata=None):
 			node.parameters = data[i]["parameters"]
 		elif nodeType == "gpt_variable":
 			pixmap = QPixmap("pics/gpt_variable.png")
-			node = GPTVariableUpdateNode(id, pixmap.width(), pixmap.height(), scene)
+			node = LLMVariableUpdateNode(id, pixmap.width(), pixmap.height(), scene, "gpt")
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
 			node.prompt = prompt
@@ -184,7 +184,7 @@ def loadScript(window,scene,jsondata=None):
 			node.labelText = data[i]["label"]
 		elif nodeType == "gemini_variable":
 			pixmap = QPixmap("pics/gemini_variable.png")
-			node = GeminiVariableUpdateNode(id, pixmap.width(), pixmap.height(), scene)
+			node = LLMVariableUpdateNode(id, pixmap.width(), pixmap.height(), scene, "gemini")
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
 			node.prompt = prompt
@@ -192,7 +192,7 @@ def loadScript(window,scene,jsondata=None):
 			node.labelText = data[i]["label"]
 		elif nodeType == "lmstudio_variable":
 			pixmap = QPixmap("pics/lmstudio_variable.png")
-			node = LMStudioVariableUpdateNode(id, pixmap.width(), pixmap.height(), scene)
+			node = LLMVariableUpdateNode(id, pixmap.width(), pixmap.height(), scene, "lmstudio")
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
 			node.prompt = prompt
