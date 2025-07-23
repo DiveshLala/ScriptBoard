@@ -432,6 +432,10 @@ class RobotLLMNode(RobotNode):
 		infoDict["gaze"] = self.gaze
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		return infoDict
+	
+	def setLLM(self, llm):
+		self.llm = llm
+		self.set_type("robot_" + llm)
 
 class VariableUpdateNode(DialogNode):
 
@@ -602,6 +606,10 @@ class LLMDecisionNode(DialogNode):
 		infoDict["label"] = self.labelText
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		return infoDict
+
+	def setLLM(self, llm):
+		self.llm = llm
+		self.set_type(llm + "_decision")
 
 class RandomDecisionNode(DialogNode):
 
@@ -959,6 +967,10 @@ class LLMVariableUpdateNode(DialogNode):
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		infoDict["label"] = self.labelText
 		return infoDict
+
+	def setLLM(self, llm):
+		self.llm = llm
+		self.set_type(llm + "_variable")
 
 
 class PythonFunctionNode(DialogNode):

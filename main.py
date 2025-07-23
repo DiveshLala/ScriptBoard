@@ -39,6 +39,7 @@ import window_classes.llm_list_window as llm_list_window
 import script_loader
 from scene import Scene
 from llm.LLM_API_server import check_for_GPT, check_for_Gemini, check_for_LMStudio
+from icons import RobotLLMNode, LLMDecisionNode, LLMVariableUpdateNode
 
 
 class ScriptMainWindow(QMainWindow):
@@ -892,6 +893,18 @@ class MyView(QGraphicsView):
 
 		selectedNodes = [x for x in self.scene().items() if x.isSelected() == True and isinstance(x, DialogNode)]
 		if len(selectedNodes) == 1:
+			if isinstance(selectedNodes[0], RobotLLMNode) or isinstance(selectedNodes[0], LLMDecisionNode) or isinstance(selectedNodes[0], LLMVariableUpdateNode):
+				submenu = QMenu("Set LLM", self)
+				GPTAction = QAction("GPT", self)
+				GPTAction.triggered.connect(lambda: self.scene().setLLMForNode(selectedNodes[0], "gpt"))
+				GeminiAction = QAction("Gemini", self)
+				GeminiAction.triggered.connect(lambda: self.scene().setLLMForNode(selectedNodes[0], "gemini"))
+				LMStudioAction = QAction("LM Studio", self)
+				LMStudioAction.triggered.connect(lambda: self.scene().setLLMForNode(selectedNodes[0], "lmstudio"))
+				submenu.addAction(GPTAction)
+				submenu.addAction(GeminiAction)
+				submenu.addAction(LMStudioAction)
+				context_menu.addMenu(submenu)
 			copyAction = QAction("Copy node", self)
 			copyAction.triggered.connect(lambda: self.scene().copyNode(selectedNodes))
 			startAction = QAction("Start script here", self)

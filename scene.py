@@ -584,6 +584,29 @@ class Scene(QGraphicsScene):
 	def addDeleteMultipleNodesToClipboard(self, nodes):
 		self.getMainWindow().addActionToClipboard(createAction(self, "delete multiple nodes", nodes, None, None))
 	
+	def setLLMForNode(self, node, llm):
+		node.setLLM(llm)
+		if isinstance(node, RobotLLMNode):
+			if llm == "gpt":
+				node.setPixmap(QPixmap('pics/robot_gpt.png'))
+			elif llm == "gemini":
+				node.setPixmap(QPixmap('pics/robot_gemini.png'))
+			elif llm == "lmstudio":
+				node.setPixmap(QPixmap('pics/robot_lmstudio.png'))
+		elif isinstance(node, LLMVariableUpdateNode):
+			if llm == "gpt":
+				node.setPixmap(QPixmap('pics/gpt_variable.png'))
+			elif llm == "gemini":
+				node.setPixmap(QPixmap('pics/gemini_variable.png'))
+			elif llm == "lmstudio":
+				node.setPixmap(QPixmap('pics/lmstudio_variable.png'))
+		elif isinstance(node, LLMDecisionNode):
+			if llm == "gpt":
+				node.setPixmap(QPixmap('pics/gpt_decision.png'))
+			elif llm == "gemini":
+				node.setPixmap(QPixmap('pics/gemini_decision.png'))
+			elif llm == "lmstudio":
+				node.setPixmap(QPixmap('pics/lmstudio_decision.png'))
 
 
 def createAction(scene, type, object, pos_before, pos_after):
