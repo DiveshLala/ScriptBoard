@@ -320,9 +320,10 @@ def send_LMStudio_request(input_prompt, server = None, recv_type="block"):
 			return None
 	
 	elif recv_type == 'stream':
+
 		try:
 			sentence = ""
-			sentence_markers = [".", "。", "?", "？", "!", "！"]
+			sentence_markers = ["。", "?", "？", "!", "！"]
 
 			response = client.chat.completions.create(
 				model="your-model-id",
@@ -340,7 +341,10 @@ def send_LMStudio_request(input_prompt, server = None, recv_type="block"):
 				for token in chunk.choices[0].delta.content:
 					sentence += token
 					if token in sentence_markers:
-						message = json.dumps({"type": "stream", "sentence": sentence, "ended": False})
+						sentence_ = sentence.strip()
+						if len(sentence_) == 0:
+							continue
+						message = json.dumps({"type": "stream", "sentence": sentence_, "ended": False})
 						server.send_message(message)
 						time.sleep(0.1)
 						sentence = ""
@@ -369,7 +373,7 @@ def get_API_information(api_name, config_file):
 		api_model = None
 
 		for x in f:
-			if len(x.strip()) == 0:
+			if len(x.strip()) == 0 or len(x.split("=")) <= 1:
 				continue
 
 			element = x.split("=")[0]
@@ -398,7 +402,7 @@ def get_API_information(api_name, config_file):
 		api_model = None
 
 		for x in f:
-			if len(x.strip()) == 0:
+			if len(x.strip()) == 0 or len(x.split("=")) <= 1:
 				continue
 
 			element = x.split("=")[0]
@@ -424,7 +428,7 @@ def get_API_information(api_name, config_file):
 		ip_address = None
 
 		for x in f:
-			if len(x.strip()) == 0:
+			if len(x.strip()) == 0 or len(x.split("=")) <= 1:
 				continue
 
 			element = x.split("=")[0]
