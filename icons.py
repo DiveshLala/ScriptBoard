@@ -1030,6 +1030,18 @@ class GeminiVariableUpdateNode(LLMVariableUpdateNode):
 		infoDict["label"] = self.labelText
 		return infoDict
 
+class LMStudioVariableUpdateNode(LLMVariableUpdateNode):
+	def __init__(self, id, width, height, parent_scene):
+		super(LMStudioVariableUpdateNode, self).__init__(id, width, height, parent_scene)
+
+	def retrieveInfo(self):
+		infoDict = super().retrieveInfo()
+		infoDict["variable"] = self.variable
+		infoDict["type"] = "lmstudio_variable"
+		infoDict["prompt"] = self.prompt.retrieveInfo()
+		infoDict["label"] = self.labelText
+		return infoDict
+
 
 class PythonFunctionNode(DialogNode):
 	def __init__(self, id, width, height, parent_scene):

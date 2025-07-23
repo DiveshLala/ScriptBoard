@@ -428,7 +428,7 @@ class ScriptProcessor:
 					self.send_message_to_server(tts_parameter_message(p[0], p[1]))
 					time.sleep(0.1)
 				node_id = output_node_id
-			elif node["type"] == "gpt_variable" or node["type"] == "gemini_variable":
+			elif node["type"] == "gpt_variable" or node["type"] == "gemini_variable" or node["type"] == "lmstudio_variable":
 				output_node_id = self.get_output_node_id(node)
 				prompt_info = node["prompt"]
 				x = DialogPrompt(prompt_info["text prompt"], prompt_info["speakers"], prompt_info["history"], prompt_info["turns"])
@@ -438,6 +438,8 @@ class ScriptProcessor:
 					self.send_message_to_llm_client(llm_message(prompt, "gpt"))
 				elif node["type"] == "gemini_variable":
 					self.send_message_to_llm_client(llm_message(prompt, "gemini"))
+				elif node["type"] == "lmstudio_variable":
+					self.send_message_to_llm_client(llm_message(prompt, "lmstudio"))
 				while self.llm_client.response == None or len(self.llm_client.response) == 0:
 					time.sleep(0.1)
 				print("LLM response", self.llm_client.response)

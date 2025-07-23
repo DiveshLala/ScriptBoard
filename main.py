@@ -94,7 +94,7 @@ class ScriptMainWindow(QMainWindow):
 		action_group = QActionGroup(self)
 		action_group.setExclusive(True)
 
-		options = ["ChatGPT", "Gemini", "LMStudio"]
+		options = ["ChatGPT", "Gemini", "LM Studio"]
 		for option in options:
 			action = QAction(option, self, checkable=True)
 			action.triggered.connect(lambda checked, opt=option: self.updateLLMType(opt, "talk"))
@@ -108,7 +108,7 @@ class ScriptMainWindow(QMainWindow):
 		action_group = QActionGroup(self)
 		action_group.setExclusive(True)
 
-		options = ["ChatGPT", "Gemini"]
+		options = ["ChatGPT", "Gemini", "LM Studio"]
 		for option in options:
 			action = QAction(option, self, checkable=True)
 			action.triggered.connect(lambda checked, opt=option: self.updateLLMType(opt, "decision"))
@@ -123,7 +123,7 @@ class ScriptMainWindow(QMainWindow):
 		action_group = QActionGroup(self)
 		action_group.setExclusive(True)
 
-		options = ["ChatGPT", "Gemini"]
+		options = ["ChatGPT", "Gemini", "LM Studio"]
 		for option in options:
 			action = QAction(option, self, checkable=True)
 			action.triggered.connect(lambda checked, opt=option: self.updateLLMType(opt, "variable"))
@@ -162,19 +162,19 @@ class ScriptMainWindow(QMainWindow):
 				icon_type = "gemini_variable"	
 				tooltip = "Gemini variable node"
 		
-		elif llm == "LMStudio":
+		elif llm == "LM Studio":
 			if nodeType == "talk":
 				pixmap= QPixmap('pics/robot_lmstudio.png')
 				icon_type = "robot_lmstudio"
 				tooltip = "Robot LM Studio node"
-			# elif nodeType == "decision":
-			# 	pixmap= QPixmap('pics/gemini_decision.png')
-			# 	icon_type = "gemini_decision"
-			# 	tooltip = "Gemini decision node"	
-			# elif nodeType == "variable":
-			# 	pixmap= QPixmap('pics/gemini_variable.png')
-			# 	icon_type = "gemini_variable"	
-			# 	tooltip = "Gemini variable node"
+			elif nodeType == "decision":
+				pixmap= QPixmap('pics/lmstudio_decision.png')
+				icon_type = "lmstudio_decision"
+				tooltip = "LM studio decision node"	
+			elif nodeType == "variable":
+				pixmap= QPixmap('pics/lmstudio_variable.png')
+				icon_type = "lmstudio_variable"	
+				tooltip = "LM Studio variable node"
 
 		if nodeType == "talk":
 			self.robot_llm_icon.set_pic(pixmap)

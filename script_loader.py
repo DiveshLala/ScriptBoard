@@ -183,6 +183,14 @@ def loadScript(window,scene,jsondata=None):
 			node.prompt = prompt
 			node.variable = data[i]["variable"]
 			node.labelText = data[i]["label"]
+		elif nodeType == "lmstudio_variable":
+			pixmap = QPixmap("pics/lmstudio_variable.png")
+			node = LMStudioVariableUpdateNode(id, pixmap.width(), pixmap.height(), scene)
+			promptInfo = data[i]["prompt"]
+			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
+			node.prompt = prompt
+			node.variable = data[i]["variable"]
+			node.labelText = data[i]["label"]
 		elif nodeType == "function":
 			pixmap = QPixmap("pics/python_function.png")
 			node = PythonFunctionNode(id, pixmap.width(), pixmap.height(), scene)

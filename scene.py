@@ -144,6 +144,8 @@ class Scene(QGraphicsScene):
 			node = GPTVariableUpdateNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 		elif icon_type == "gemini_variable":
 			node = GeminiVariableUpdateNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+		elif icon_type == "lmstudio_variable":
+			node = LMStudioVariableUpdateNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 		elif icon_type == "python_function":
 			node = PythonFunctionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 		elif icon_type == "enter_subseq":
