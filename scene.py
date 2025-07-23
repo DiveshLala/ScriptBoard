@@ -607,6 +607,7 @@ class Scene(QGraphicsScene):
 				node.setPixmap(QPixmap('pics/gemini_decision.png'))
 			elif llm == "lmstudio":
 				node.setPixmap(QPixmap('pics/lmstudio_decision.png'))
+		self.setSceneChanged(True)
 
 
 def createAction(scene, type, object, pos_before, pos_after):
