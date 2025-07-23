@@ -635,7 +635,6 @@ class GPTDecisionNode(LLMDecisionNode):
 		super(GPTDecisionNode, self).__init__(id, width, height, parent_scene)
 	
 	def retrieveInfo(self):
-		print("retriving gpt")
 		infoDict = super().retrieveInfo()
 		infoDict["type"] = "gpt_decision"
 		infoDict["label"] = self.labelText
@@ -648,9 +647,20 @@ class GeminiDecisionNode(LLMDecisionNode):
 		super(GeminiDecisionNode, self).__init__(id, width, height, parent_scene)
 	
 	def retrieveInfo(self):
-		print("retriving gemini")
 		infoDict = super().retrieveInfo()
 		infoDict["type"] = "gemini_decision"
+		infoDict["label"] = self.labelText
+		infoDict["prompt"] = self.prompt.retrieveInfo()
+		return infoDict
+
+class LMStudioDecisionNode(LLMDecisionNode):
+
+	def __init__(self, id, width, height, parent_scene):
+		super(LMStudioDecisionNode, self).__init__(id, width, height, parent_scene)
+	
+	def retrieveInfo(self):
+		infoDict = super().retrieveInfo()
+		infoDict["type"] = "lmstudio_decision"
 		infoDict["label"] = self.labelText
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		return infoDict

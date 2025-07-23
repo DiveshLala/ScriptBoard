@@ -145,6 +145,13 @@ def loadScript(window,scene,jsondata=None):
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
 			node.prompt = prompt
+		elif nodeType == "lmstudio_decision":
+			pixmap = QPixmap("pics/lmstudio_decision.png")
+			node = LMStudioDecisionNode(id, pixmap.width(), pixmap.height(), scene)
+			node.labelText = data[i]["label"]
+			promptInfo = data[i]["prompt"]
+			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
+			node.prompt = prompt
 		elif nodeType == "turn_based_decision":
 			pixmap = QPixmap("pics/turn_based_decision.png")
 			node = TurnBasedDecisionNode(id, pixmap.width(), pixmap.height(), scene)

@@ -346,7 +346,7 @@ class ScriptProcessor:
 						self.update_monitoring_window()
 				self.received_robot_utterance = ""
 				node_id = output_node_id
-			elif node["type"] == "gpt_decision" or node["type"] == "gemini_decision":
+			elif node["type"] == "gpt_decision" or node["type"] == "gemini_decision" or node["type"] == "lmstudio_decision":
 				node_outputs = [c["connectedNodeID"] for c in node["connectors"] if c["type"] == "condition_output"]
 				if len(node_outputs) == 0:
 					return
@@ -362,6 +362,8 @@ class ScriptProcessor:
 						self.send_message_to_llm_client(llm_message(prompt, "gpt"))
 					elif node["type"] == "gemini_decision":
 						self.send_message_to_llm_client(llm_message(prompt, "gemini"))
+					elif node["type"] == "lmstudio_decision":
+						self.send_message_to_llm_client(llm_message(prompt, "lmstudio"))
 					while self.llm_client.response == None or len(self.llm_client.response) == 0:
 						time.sleep(0.1)
 					llm_response = self.llm_client.response

@@ -87,6 +87,11 @@ class Scene(QGraphicsScene):
 			pixmap = QPixmap("pics/gemini_decision.png")
 			node = GeminiDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 			node.addConnector(drop_pos.x(), drop_pos.y(), -12, node.height/2, "input")
+		
+		elif event.source().icon_type == "lmstudio_decision":
+			pixmap = QPixmap("pics/lmstudio_decision.png")
+			node = LMStudioDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+			node.addConnector(drop_pos.x(), drop_pos.y(), -12, node.height/2, "input")
 
 		elif event.source().icon_type == "random_decision":
 			pixmap = QPixmap("pics/random_decision.png")
@@ -443,6 +448,30 @@ class Scene(QGraphicsScene):
 					#conditions and connectors
 					pixmap = QPixmap("pics/gpt_decision.png")
 					newNode = GPTDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+					offset = -30
+					for c in n.connectors:
+						if isinstance(c, ConditionOutputJoint):
+							newNode.addConnector(new_x, new_y, newNode.width + 2, newNode.height/2 + offset, "condition_output", condition=c.condition)
+							offset += 15	
+						elif isinstance(c, InputJoint):
+							newNode.addConnector(new_x, new_y, -12, newNode.height/2, "input")
+
+				elif n.icon_type == "gemini_decision":
+					#conditions and connectors
+					pixmap = QPixmap("pics/gemini_decision.png")
+					newNode = GeminiDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
+					offset = -30
+					for c in n.connectors:
+						if isinstance(c, ConditionOutputJoint):
+							newNode.addConnector(new_x, new_y, newNode.width + 2, newNode.height/2 + offset, "condition_output", condition=c.condition)
+							offset += 15	
+						elif isinstance(c, InputJoint):
+							newNode.addConnector(new_x, new_y, -12, newNode.height/2, "input")
+
+				elif n.icon_type == "lmstudio_decision":
+					#conditions and connectors
+					pixmap = QPixmap("pics/lmstudio_decision.png")
+					newNode = LMStudioDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 					offset = -30
 					for c in n.connectors:
 						if isinstance(c, ConditionOutputJoint):
