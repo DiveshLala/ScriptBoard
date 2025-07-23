@@ -311,8 +311,7 @@ def send_LMStudio_request(input_prompt, server = None, recv_type="block"):
 			response = client.chat.completions.create(
 				model="your-model-id",
 				messages=[
-					{"role": "system", "content": "You are a helpful assistant."},
-					{"role": "user", "content": "Tell me a joke."}
+					{"role": "user", "content": input_prompt}
 				]
 			)
 			r = response.choices[0].message.content
@@ -328,8 +327,7 @@ def send_LMStudio_request(input_prompt, server = None, recv_type="block"):
 			response = client.chat.completions.create(
 				model="your-model-id",
 				messages=[
-					{"role": "system", "content": "You are a helpful assistant."},
-					{"role": "user", "content": "Tell me a joke."}
+					{"role": "user", "content": input_prompt}
 				],
 				stream = True
 			)
