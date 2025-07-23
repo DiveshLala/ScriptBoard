@@ -323,7 +323,7 @@ def send_LMStudio_request(input_prompt, server = None, recv_type="block"):
 
 		try:
 			sentence = ""
-			sentence_markers = ["。", "?", "？", "!", "！"]
+			sentence_markers = [".", "。", "?", "？", "!", "！"]
 
 			response = client.chat.completions.create(
 				model="your-model-id",
@@ -341,9 +341,11 @@ def send_LMStudio_request(input_prompt, server = None, recv_type="block"):
 				for token in chunk.choices[0].delta.content:
 					sentence += token
 					if token in sentence_markers:
+						
 						sentence_ = sentence.strip()
 						if len(sentence_) == 0:
 							continue
+						
 						message = json.dumps({"type": "stream", "sentence": sentence_, "ended": False})
 						server.send_message(message)
 						time.sleep(0.1)
