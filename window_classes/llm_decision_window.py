@@ -48,7 +48,7 @@ class LLMDecisionWindow(QDialog):
 
 		self.participantCombo = QComboBox()
 		self.participantCombo.setFixedWidth(300)
-		self.participantCombo.addItems(["None", "All", "Users only", "Target user only", "Non-target user only", "Robot only"])
+		self.participantCombo.addItems(["None", "All", "Users only", "Target user only", "Non-target user only", "Robot only", "Target and Robot only"])
 		self.participantCombo.currentIndexChanged.connect(self.changeParticipantCombo)
 
 		self.contextCombo = QComboBox()

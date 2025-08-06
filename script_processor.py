@@ -997,6 +997,8 @@ class ScriptProcessor:
 			speak_id = "Non-target"
 		elif speakers == "Robot only":
 			speak_id = "Robot"
+		elif speakers == "Target and Robot only":
+			speak_id = "Target-and-Robot"
 
 		if history == "Whole dialog history":
 			return prompt_instruction + "\n" + self.create_history_script(speaker_id=speak_id)
@@ -1004,7 +1006,7 @@ class ScriptProcessor:
 			turns = int(num_turns)
 			return prompt_instruction + "\n" + self.create_history_script(speaker_id=speak_id, num_recent_turns=turns)
 
-	
+
 	def create_history_script(self, speaker_id="All", num_recent_turns="All"):
 		print("history")
 		print(self.dialog_history)
@@ -1022,18 +1024,24 @@ class ScriptProcessor:
 			relevant_speakers = [x for x in relevant_speakers if x[0].startswith("HUMAN") and int(x[0].replace("HUMAN ", "")) == self.target_user.id]
 		elif speaker_id == "Non-target":
 			relevant_speakers = [x for x in relevant_speakers if x[0].startswith("HUMAN") and int(x[0].replace("HUMAN ", "")) != self.target_user.id]
-		
+		elif speaker_id == "Target-and-Robot":
+			relevant_speakers = [x for x in relevant_speakers if x[0].startswith("HUMAN") and int(x[0].replace("HUMAN ", "")) == self.target_user.id or x[0].startswith("ROBOT")]
+
 		if num_recent_turns != "All":
 			relevant_speakers = relevant_speakers[-num_recent_turns:]
 
 		#check how many speakers so we know whether to add other information
 		num_human_speakers = set([x[0] for x in relevant_speakers if x[0].startswith("HUMAN")])
+		num_robot_speakers = set([x[0] for x in relevant_speakers if x[0].startswith("ROBOT")])
+		set_of_speakers = num_human_speakers.union(num_robot_speakers)
 		script = ""
 		for x in relevant_speakers:
-			if len(num_human_speakers) == 1:
-				script += x[1] + "\n"
-			else:
-				script += x[0] + ":" + x[1] + "\n"
+			
+			speaker_id = x[0]
+			if len(num_human_speakers) == 1 and x[0].startswith("HUMAN"):
+				speaker_id = "HUMAN"
+				
+			script += speaker_id + " " + x[1] + "\n"
 
 		print("Script")
 		print(script)
