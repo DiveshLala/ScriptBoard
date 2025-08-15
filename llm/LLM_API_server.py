@@ -23,6 +23,7 @@ except ImportError:
 	print("Need to install Google packages to use Gemini!")
 
 
+
 GPT_API_INFO = {}
 GEMINI_API_INFO = {}
 LMSTUDIO_ADDRESS = {}
@@ -30,6 +31,9 @@ LMSTUDIO_ADDRESS = {}
 GPT_AVAILABLE = False
 GEMINI_AVAILABLE = False
 LMSTUDIO_AVAILABLE = False
+
+# 失敗時のデフォルト応答
+DEFAULT_FAIL_RESPONSE = "そうなんですね"
 
 #class for sending message to server
 class Server():
@@ -111,6 +115,7 @@ class Server():
 			message = json.dumps({"type": "unavailable", "sentence": "", "ended": True})
 			self.send_message(message)
 		
+
 	def process_GPT_prompt(self, prompt, recv_type):
 		print("=======================================================")
 		print("RECEIVE TYPE", recv_type)
@@ -119,10 +124,12 @@ class Server():
 		if recv_type == "block":
 			response = send_GPT_request(prompt)
 			print(response)
-			if response != None:
-				print("Response time for", recv_type, ":", time.time() - start_time)
-				print("Response", response, "\n")
-				message = json.dumps({"type": "block", "sentence": response, "ended": True})
+			# 失敗時はデフォルト応答
+			if response is None:
+				response = DEFAULT_FAIL_RESPONSE
+			print("Response time for", recv_type, ":", time.time() - start_time)
+			print("Response", response, "\n")
+			message = json.dumps({"type": "block", "sentence": response, "ended": True})
 
 			#ensures that threads don't get merged
 			while(self.send_lock):
@@ -130,7 +137,7 @@ class Server():
 			self.send_lock = True
 			self.send_message(message)
 			self.send_lock = False
-		
+        
 		elif recv_type == "stream":
 			response = send_GPT_request(prompt, server = self, recv_type="stream")
 
@@ -189,70 +196,80 @@ class Server():
 
 def send_GPT_request(input_prompt, server = None, recv_type="block"):
 
-	if GPT_API_INFO == None:
-		return None
+	# どんな場合も失敗時はDEFAULT_FAIL_RESPONSEを返す
+	try:
+		if GPT_API_INFO is None:
+			return DEFAULT_FAIL_RESPONSE
 
-	login_key = GPT_API_INFO["key"]
-	model_version = GPT_API_INFO["model"]
+		login_key = GPT_API_INFO.get("key")
+		model_version = GPT_API_INFO.get("model")
 
-	if login_key == None or model_version == None:
-		print("GPT login information incorrect!", login_key, model_version)
-		return None
+		if not login_key or not model_version:
+			print("GPT login information incorrect!", login_key, model_version)
+			return DEFAULT_FAIL_RESPONSE
 
-	if recv_type == "block":
-		try:
-			client = OpenAI(api_key=login_key)
-			messages = [{"role" : "user", "content": input_prompt}]
-
-			response = client.chat.completions.create(
-				model=model_version,
-				messages=messages
-			)
-			r = response.choices[0].message.content
-			r.strip()
-			r = re.sub(".*:", "", r)
-			r = re.sub("応答文", "", r)
-			r = re.sub(".*寄り添い.*。", "", r)
-			r = re.sub(".*ふんわりキャラ.*。", "", r)
+		if recv_type == "block":
 			try:
-				token_total = response.usage.total_tokens
-				print("%d tokens" % token_total)
-			except:
-				print("no token data")
-			return r
+				client = OpenAI(api_key=login_key)
+				messages = [{"role" : "user", "content": input_prompt}]
 
-		except Exception as e:
-			print(e)
-			return None
+				response = client.chat.completions.create(
+					model=model_version,
+					messages=messages
+				)
+				r = response.choices[0].message.content
+				r = r.strip()
+				r = re.sub(".*:", "", r)
+				r = re.sub("応答文", "", r)
+				r = re.sub(".*寄り添い.*。", "", r)
+				r = re.sub(".*ふんわりキャラ.*。", "", r)
+				try:
+					token_total = response.usage.total_tokens
+					print("%d tokens" % token_total)
+				except Exception:
+					print("no token data")
+				if not r:
+					return DEFAULT_FAIL_RESPONSE
+				return r
+			except Exception as e:
+				print(e)
+				return DEFAULT_FAIL_RESPONSE
 
-	elif recv_type == "stream" and server != None:
-		client = OpenAI(api_key=login_key)
-
-		messages = [{"role" : "user", "content": input_prompt}]
-
-		try:
-			response = client.chat.completions.create(messages=messages, model=model_version, stream=True)
-		except Exception as e:
-			print(e)
-			return None
-
-		sentence = ""
-		sentence_markers = [".", "。", "?", "？", "!", "！"]
-		for sse_chunk in response:
-			content = sse_chunk.choices[0].delta.content
-			if content == None:
-				print("Finished stream...")
-				message = json.dumps({"type": "stream", "sentence": "", "ended": True})
+		elif recv_type == "stream" and server is not None:
+			try:
+				client = OpenAI(api_key=login_key)
+				messages = [{"role" : "user", "content": input_prompt}]
+				response = client.chat.completions.create(messages=messages, model=model_version, stream=True)
+			except Exception as e:
+				print(e)
+				# streamの場合も失敗時は終了メッセージを送信
+				message = json.dumps({"type": "stream", "sentence": DEFAULT_FAIL_RESPONSE, "ended": True})
 				server.send_message(message)
-				break
+				return DEFAULT_FAIL_RESPONSE
 
-			for token in content:
-				sentence += token
-				if token in sentence_markers:
-					message = json.dumps({"type": "stream", "sentence": sentence, "ended": False})
+			sentence = ""
+			sentence_markers = [".", "。", "?", "？", "!", "！"]
+			for sse_chunk in response:
+				content = sse_chunk.choices[0].delta.content
+				if content is None:
+					print("Finished stream...")
+					message = json.dumps({"type": "stream", "sentence": "", "ended": True})
 					server.send_message(message)
-					time.sleep(0.5)
-					sentence = ""
+					break
+
+				for token in content:
+					sentence += token
+					if token in sentence_markers:
+						message = json.dumps({"type": "stream", "sentence": sentence, "ended": False})
+						server.send_message(message)
+						time.sleep(0.5)
+						sentence = ""
+			return None
+		else:
+			return DEFAULT_FAIL_RESPONSE
+	except Exception as e:
+		print("Unexpected error in send_GPT_request:", e)
+		return DEFAULT_FAIL_RESPONSE
 
 def send_Gemini_request(input_prompt, server= None, recv_type="block"):
 
