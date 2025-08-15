@@ -48,7 +48,6 @@ class Server():
 
 	def connect(self):
 		serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 		serversock.bind(('', self.server_port))
 		serversock.listen(10)
 
@@ -58,34 +57,39 @@ class Server():
 			self.client_socket, client_address = serversock.accept()
 			print('client connected to LLM module')
 			self.is_connected = True
-			
-			part_message = ''
-			part_bytes = b''
+
+			buffer = ""
 
 			while self.is_connected:
-				while True:
-					try:
-						recvmessage = self.client_socket.recv(4096)
-						m = part_bytes + recvmessage
-						message = m.decode(encoding="utf-8")
-						part_bytes = b''
-					except UnicodeDecodeError as e:
-						part_bytes = m
-						continue
-					except socket.error:
-						print ('Error receiving data from server')
+				try:
+					recvmessage = self.client_socket.recv(409600)
+					if not recvmessage:
+						print("Client disconnected.")
 						self.is_connected = False
 						break
-
-					try:
-						message = part_message + message
-						json_msg = json.loads(message)
-						self.process_message(json_msg)
-						part_message = ''
-					except json.JSONDecodeError as e:
-						part_message = message
-						print("incorrect message..", part_message)
-						continue
+					buffer += recvmessage.decode("utf-8")
+					while "\n" in buffer:
+						line, buffer = buffer.split("\n", 1)
+						if not line.strip():
+							print("Empty line received, skipping...")
+							continue
+						try:
+							json_msg = json.loads(line)
+							self.process_message(json_msg)
+						except json.JSONDecodeError:
+							print("incorrect message..", line)
+							continue
+				except UnicodeDecodeError as e:
+					print("Unicode decode error:", e)
+					continue
+				except socket.error:
+					print('Error receiving data from server')
+					self.is_connected = False
+					break
+				except Exception as e:
+					print("Unexpected error:", e)
+					self.is_connected = False
+					break
 
 			print("Reconnecting...")
 
