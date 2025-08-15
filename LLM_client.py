@@ -39,7 +39,7 @@ class Client:
 				while self.connected:
 					try:
 						try:
-							b = self.soc.recv(102400)
+							b = self.soc.recv(409600)
 						except socket.timeout:
 							continue  # タイムアウト時は再度recv
 						if b == b'':
