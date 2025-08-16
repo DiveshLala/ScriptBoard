@@ -64,8 +64,10 @@ class Client:
 								data += chunk
 							if not self.connected:
 								break
+							print('<RECEIVED MESSAGE>')
 							try:
 								message = data.decode()
+								print("Received message:", message)
 							except UnicodeDecodeError:
 								print("Decode error, skipping message.")
 								self.streaming = False
@@ -86,6 +88,11 @@ class Client:
 								self.response = None
 								print("LLM response not available...")
 								continue
+							
+							print("LLM response:", response)
+							print('ended:', ended)
+							print('recv_type:', recv_type)
+
 							if recv_type == "stream" and ended:
 								self.streaming = False
 								continue
