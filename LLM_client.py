@@ -32,77 +32,75 @@ class Client:
 						time.sleep(RETRY_WAIT)
 						continue
 
-				message = ""
-				m = b''
-				json_fail_count = 0
-
-				while self.connected:
-					try:
+					import struct
+					while self.connected:
 						try:
-							b = self.soc.recv(409600)
-						except socket.timeout:
-							continue  # タイムアウト時は再度recv
-						if b == b'':
-							print("Server closed connection.")
+							# まず4バイトで長さを受信
+							total_data = b''
+							while len(total_data) < 4:
+								try:
+									chunk = self.soc.recv(4 - len(total_data))
+								except socket.timeout:
+									continue
+								if chunk == b'':
+									print("Server closed connection.")
+									self.connected = False
+									break
+								total_data += chunk
+							if not self.connected:
+								break
+							msg_len = int.from_bytes(total_data, byteorder='big')
+							# 本体を受信
+							data = b''
+							while len(data) < msg_len:
+								try:
+									chunk = self.soc.recv(msg_len - len(data))
+								except socket.timeout:
+									continue
+								if chunk == b'':
+									print("Server closed connection.")
+									self.connected = False
+									break
+								data += chunk
+							if not self.connected:
+								break
+							try:
+								message = data.decode()
+							except UnicodeDecodeError:
+								print("Decode error, skipping message.")
+								self.streaming = False
+								self.response = None
+								break
+							try:
+								msg_obj = json.loads(message)
+							except json.decoder.JSONDecodeError:
+								print("JSON decode error, skipping message.")
+								self.streaming = False
+								self.response = None
+								break
+							ended = msg_obj.get("ended", False)
+							response = msg_obj.get("sentence", "")
+							recv_type = msg_obj.get("type", "")
+							if recv_type == "unavailable":
+								self.streaming = False
+								self.response = None
+								print("LLM response not available...")
+								continue
+							if recv_type == "stream" and ended:
+								self.streaming = False
+								continue
+							response = response.replace("ROBOT:", "")
+							if recv_type == "stream":
+								self.streamed_sentences.append(response)
+								print("LLM client sentences:", self.streamed_sentences)
+							else:
+								print(response)
+								self.response = response
+						except Exception as e:
+							print("LLM client error", e)
+							traceback.print_exc()
 							self.connected = False
 							break
-						m = m + b
-						try:
-							s = m.decode()
-						except UnicodeDecodeError:
-							# 文字化け時は次の受信を待つ
-							continue
-						m = b''
-						message += s
-
-						try:
-							msg_obj = json.loads(message)
-							json_fail_count = 0  # 成功したらリセット
-						except json.decoder.JSONDecodeError:
-							json_fail_count += 1
-							if json_fail_count > MAX_JSON_FAIL:
-								print("Too many JSON decode failures. Resetting buffer.")
-								message = ""
-								json_fail_count = 0
-							else:
-								# 追加データを待つ
-								continue
-
-						ended = msg_obj.get("ended", False)
-						response = msg_obj.get("sentence", "")
-						recv_type = msg_obj.get("type", "")
-
-						if recv_type == "unavailable":
-							self.streaming = False
-							message = ""
-							m = b''
-							self.response = None
-							print("LLM response not available...")
-							continue
-
-						if recv_type == "stream" and ended:
-							self.streaming = False
-							message = ""
-							m = b''
-							continue
-
-						response = response.replace("ROBOT:", "")
-
-						message = ""
-						m = b''
-
-						if recv_type == "stream":
-							self.streamed_sentences.append(response)
-							print("LLM client sentences:", self.streamed_sentences)
-						else:
-							print(response)
-							self.response = response
-
-					except Exception as e:
-						print("LLM client error", e)
-						traceback.print_exc()
-						self.connected = False
-						break
 			except Exception as e:
 				print("Critical error in connection loop:", e)
 				traceback.print_exc()

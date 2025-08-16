@@ -94,13 +94,17 @@ class Server():
 			print("Reconnecting...")
 
 	def send_message(self, message):
-		try:
-			chunks = [message[i:i+200] for i in range(0, len(message), 200)]
-			for m in chunks:
-				self.client_socket.send(m.encode())
-		except:
-			print("Server disconnected!")
-			self.is_connected = False
+			try:
+				# メッセージをエンコード
+				data = message.encode()
+				# 長さを4バイトbig endianで送信
+				length = len(data)
+				self.client_socket.send(length.to_bytes(4, byteorder='big'))
+				# 本体を送信
+				self.client_socket.send(data)
+			except:
+				print("Server disconnected!")
+				self.is_connected = False
 	
 
 	def process_message(self, message):
