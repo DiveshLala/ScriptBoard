@@ -240,7 +240,6 @@ def send_GPT_request(input_prompt, server = None, recv_type="block"):
 					return DEFAULT_FAIL_RESPONSE
 				return r
 			except Exception as e:
-				print(e)
 				return DEFAULT_FAIL_RESPONSE
 
 		elif recv_type == "stream" and server is not None:
@@ -488,7 +487,7 @@ def check_for_GPT():
 	
 	response = send_GPT_request("Hello, what is your name?")
 
-	if response == None:
+	if response == None or response == DEFAULT_FAIL_RESPONSE:
 		return -4
 
 	GPT_AVAILABLE = True
