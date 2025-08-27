@@ -41,7 +41,9 @@ from scene import Scene
 from llm.LLM_API_server import check_for_GPT, check_for_Gemini, check_for_LMStudio
 from icons import RobotLLMNode, LLMDecisionNode, LLMVariableUpdateNode
 import ctypes
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("ScriptBoard")
+
+if sys.platform == "win32":
+	ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("ScriptBoard")
 
 class ScriptMainWindow(QMainWindow):
 
