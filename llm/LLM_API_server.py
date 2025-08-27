@@ -48,6 +48,7 @@ class Server():
 
 	def connect(self):
 		serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		serversock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		serversock.bind(('', self.server_port))
 		serversock.listen(10)
 
