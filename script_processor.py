@@ -326,6 +326,13 @@ class ScriptProcessor:
 
 						gaze_target = next(gaze_targets)
 
+						#if a failure message is received then continue to the next
+						if llm_response == "FAIL_RESPONSE":
+							# future work: use fallback utterance if there is a failure
+							# self.send_message_to_server(utterance_message("そうですね", "", "", "", gaze_target))	
+							self.update_monitoring_window()
+							break
+
 						self.send_message_to_server(utterance_message(llm_response, "", "", "", gaze_target))	
 
 						while len(self.received_robot_utterance.strip()) == 0:
@@ -1032,8 +1039,6 @@ class ScriptProcessor:
 
 		#check how many speakers so we know whether to add other information
 		num_human_speakers = set([x[0] for x in relevant_speakers if x[0].startswith("HUMAN")])
-		num_robot_speakers = set([x[0] for x in relevant_speakers if x[0].startswith("ROBOT")])
-		set_of_speakers = num_human_speakers.union(num_robot_speakers)
 		script = ""
 		for x in relevant_speakers:
 			

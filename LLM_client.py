@@ -85,7 +85,8 @@ class Client:
 							recv_type = msg_obj.get("type", "")
 							if recv_type == "unavailable":
 								self.streaming = False
-								self.response = None
+								self.streamed_sentences.append("FAIL_RESPONSE")
+								self.response = response
 								print("LLM response not available...")
 								continue
 							
@@ -97,6 +98,7 @@ class Client:
 								self.streaming = False
 								continue
 							response = response.replace("ROBOT:", "")
+							response = response.replace("HUMAN:", "")
 							if recv_type == "stream":
 								self.streamed_sentences.append(response)
 								print("LLM client sentences:", self.streamed_sentences)

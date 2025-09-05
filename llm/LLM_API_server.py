@@ -32,9 +32,6 @@ GPT_AVAILABLE = False
 GEMINI_AVAILABLE = False
 LMSTUDIO_AVAILABLE = False
 
-# 失敗時のデフォルト応答
-DEFAULT_FAIL_RESPONSE = "そうなんですね"
-
 #class for sending message to server
 class Server():
 
@@ -121,7 +118,7 @@ class Server():
 		elif llm == "lmstudio" and LMSTUDIO_AVAILABLE:
 			self.process_LMStudio_prompt(prompt, recv_type)
 		else:
-			message = json.dumps({"type": "unavailable", "sentence": "", "ended": True})
+			message = json.dumps({"type": "unavailable", "sentence": "FAIL_RESPONSE", "ended": True})
 			self.send_message(message)
 		
 
@@ -132,10 +129,9 @@ class Server():
 		start_time = time.time()
 		if recv_type == "block":
 			response = send_GPT_request(prompt)
-			print(response)
 			# 失敗時はデフォルト応答
-			if response is None:
-				response = DEFAULT_FAIL_RESPONSE
+			if response == None:
+				response = "FAIL_RESPONSE"
 			print("Response time for", recv_type, ":", time.time() - start_time)
 			print("Response", response, "\n")
 			message = json.dumps({"type": "block", "sentence": response, "ended": True})
@@ -205,17 +201,16 @@ class Server():
 
 def send_GPT_request(input_prompt, server = None, recv_type="block"):
 
-	# どんな場合も失敗時はDEFAULT_FAIL_RESPONSEを返す
 	try:
 		if GPT_API_INFO is None:
-			return DEFAULT_FAIL_RESPONSE
+			return None
 
 		login_key = GPT_API_INFO.get("key")
 		model_version = GPT_API_INFO.get("model")
 
 		if not login_key or not model_version:
 			print("GPT login information incorrect!", login_key, model_version)
-			return DEFAULT_FAIL_RESPONSE
+			return None
 
 		if recv_type == "block":
 			try:
@@ -238,10 +233,10 @@ def send_GPT_request(input_prompt, server = None, recv_type="block"):
 				except Exception:
 					print("no token data")
 				if not r:
-					return DEFAULT_FAIL_RESPONSE
+					return None
 				return r
 			except Exception as e:
-				return DEFAULT_FAIL_RESPONSE
+				return None
 
 		elif recv_type == "stream" and server is not None:
 			try:
@@ -249,11 +244,8 @@ def send_GPT_request(input_prompt, server = None, recv_type="block"):
 				messages = [{"role" : "user", "content": input_prompt}]
 				response = client.chat.completions.create(messages=messages, model=model_version, stream=True)
 			except Exception as e:
-				print(e)
-				# streamの場合も失敗時は終了メッセージを送信
-				message = json.dumps({"type": "stream", "sentence": DEFAULT_FAIL_RESPONSE, "ended": True})
-				server.send_message(message)
-				return DEFAULT_FAIL_RESPONSE
+				send_failure_message_for_stream(server)
+				return None
 
 			sentence = ""
 			sentence_markers = [".", "。", "?", "？", "!", "！"]
@@ -274,10 +266,12 @@ def send_GPT_request(input_prompt, server = None, recv_type="block"):
 						sentence = ""
 			return None
 		else:
-			return DEFAULT_FAIL_RESPONSE
+			return None
 	except Exception as e:
 		print("Unexpected error in send_GPT_request:", e)
-		return DEFAULT_FAIL_RESPONSE
+		if recv_type == "stream":
+			send_failure_message_for_stream(server)
+		return None
 
 def send_Gemini_request(input_prompt, server= None, recv_type="block"):
 
@@ -291,7 +285,6 @@ def send_Gemini_request(input_prompt, server= None, recv_type="block"):
 		print("Gemini login information incorrect!", login_key, model_version)
 		return None
 
-	print("RECV TYPE", recv_type)
 	if recv_type == "block":
 		try:
 			client = genai.Client(api_key=login_key)
@@ -319,7 +312,7 @@ def send_Gemini_request(input_prompt, server= None, recv_type="block"):
 			message = json.dumps({"type": "stream", "sentence": "", "ended": True})
 			server.send_message(message)
 		except Exception as e:
-			print(e)
+			send_failure_message_for_stream(server)
 			return None
 
 
@@ -381,6 +374,7 @@ def send_LMStudio_request(input_prompt, server = None, recv_type="block"):
 		except Exception as e:
 			print(e)
 			traceback.print_exc()
+			send_failure_message_for_stream(server)
 			return None
 
 #return either None or a dictionary with the information 
@@ -488,7 +482,7 @@ def check_for_GPT():
 	
 	response = send_GPT_request("Hello, what is your name?")
 
-	if response == None or response == DEFAULT_FAIL_RESPONSE:
+	if response == None:
 		return -4
 
 	GPT_AVAILABLE = True
@@ -548,6 +542,14 @@ def check_for_LMStudio():
 	LMSTUDIO_AVAILABLE = True
 	print("LM STUDIO AVAILABLE")
 	return 0
+
+def send_failure_message_for_stream(server):
+	message = json.dumps({"type": "stream", "sentence": "FAIL_RESPONSE", "ended": False})
+	server.send_message(message)
+	time.sleep(0.1)
+	message = json.dumps({"type": "stream", "sentence": "", "ended": True})
+	server.send_message(message)
+
 
 server = Server(5042)
 
