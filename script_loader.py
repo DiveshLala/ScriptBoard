@@ -83,6 +83,7 @@ def loadScript(window,scene,jsondata=None):
 			node.prompt = prompt
 			node.gaze = data[i]["gaze"]
 			node.bargeIn = data[i]["barge-in"]
+			node.fallback = data[i]["fallback"]
 		elif nodeType == "robot_gemini":
 			pixmap = QPixmap("pics/robot_gemini.png")
 			node = RobotLLMNode(id, pixmap.width(), pixmap.height(), scene, "gemini")

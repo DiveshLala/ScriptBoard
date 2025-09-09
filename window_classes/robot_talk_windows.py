@@ -134,7 +134,7 @@ class TalkWindow(QDialog):
 
 
 class TalkLLMWindow(QDialog):
-	def __init__(self, initPrompt, initLabel, bargeIn, human_ids, variables, init_gaze):
+	def __init__(self, initPrompt, initLabel, bargeIn, human_ids, variables, init_gaze, init_fallback):
 		super().__init__()
 
 		self.setWindowTitle("LLM Dialogue")
@@ -249,6 +249,7 @@ class TalkLLMWindow(QDialog):
 		fallbackLayout.addWidget(header)
 		fallbackLayout.addWidget(QLabel("What should be said in case of error?"))
 		self.fallbackBox = QLineEdit()
+		self.fallbackBox.setText(init_fallback)
 		fallbackLayout.addWidget(self.fallbackBox)
 
 		fallbackWidget = QWidget()

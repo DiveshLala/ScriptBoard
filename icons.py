@@ -380,15 +380,17 @@ class RobotLLMNode(RobotNode):
 		self.prompt = DialogPrompt("", "None", "Whole dialog history", 1)
 		self.bargeIn = False
 		self.gaze = ""
+		self.fallback = ""
 		self.llm = llm
 	
 	def mouseDoubleClickEvent(self, e):
-		dlg = robot_window.TalkLLMWindow(self.prompt, self.labelText, self.bargeIn, [x[0] for x in self.parent_scene.getEnvironment()], [x[0] for x in self.parent_scene.getVariables()], self.gaze)
+		dlg = robot_window.TalkLLMWindow(self.prompt, self.labelText, self.bargeIn, [x[0] for x in self.parent_scene.getEnvironment()], [x[0] for x in self.parent_scene.getVariables()], self.gaze, self.fallback)
 		accept = dlg.exec()
 		if accept == 1:
 			self.prompt = DialogPrompt(dlg.promptBox.toPlainText(), dlg.participantCombo.currentText(), dlg.contextCombo.currentText(), dlg.numTurns.value())
 			self.labelText = dlg.label.text()
 			self.gaze = dlg.gazeCombo.currentText()
+			self.fallback = dlg.fallbackBox.text()
 			self.updateDialogLabel()
 
 			#barge in condition
@@ -430,6 +432,7 @@ class RobotLLMNode(RobotNode):
 		infoDict["label"] = self.labelText
 		infoDict["barge-in"] = self.bargeIn
 		infoDict["gaze"] = self.gaze
+		infoDict["fallback"] = self.fallback
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		return infoDict
 	

@@ -289,6 +289,7 @@ class ScriptProcessor:
 				output_node_id = self.get_output_node_id(node)
 				barge_in = [c["connectedNodeID"] for c in node["connectors"] if c["type"] == "condition_output" and c["condition"]["target"] == "Barge-in"]
 				gaze = node["gaze"]
+				fallback_utterance = node["fallback"]
 
 				if len(barge_in) > 0 and not self.isDoingBargeIn:
 					self.isDoingBargeIn = True
@@ -328,8 +329,8 @@ class ScriptProcessor:
 
 						#if a failure message is received then continue to the next
 						if llm_response == "FAIL_RESPONSE":
-							# future work: use fallback utterance if there is a failure
-							# self.send_message_to_server(utterance_message("そうですね", "", "", "", gaze_target))	
+							if len(fallback_utterance) > 0:
+								self.send_message_to_server(utterance_message(fallback_utterance, "", "", "", gaze_target))	
 							self.update_monitoring_window()
 							break
 
