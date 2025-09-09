@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialogButtonBox, QTextEdit, QVBoxLayout, QHBoxLayout, QLabel, QDialog, QLineEdit, QComboBox, QSpinBox, QPushButton, QCheckBox
+from PyQt5.QtWidgets import QDialogButtonBox, QTextEdit, QVBoxLayout, QHBoxLayout, QLabel, QDialog, QLineEdit, QComboBox, QSpinBox, QPushButton, QCheckBox, QWidget, QSizePolicy
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QFont
 
@@ -173,22 +173,51 @@ class TalkLLMWindow(QDialog):
 		promptLayout.addWidget(self.promptBox)
 		promptLayout.addLayout(insertLayout)
 
+		addedInformationLayout = QHBoxLayout() 
+		addedInformationLayout.setAlignment(Qt.AlignTop)
+
+		# Dialog history parameters
+		dialogHistoryLayout = QVBoxLayout()
+		dialogHistoryLayout.setAlignment(Qt.AlignLeft)
+		header = QLabel("Information to be added below prompt")
+		font = QFont()
+		font.setBold(True)
+		header.setFont(font)
+		dialogHistoryLayout.addWidget(header)
+		dialogHistoryLayout.addWidget(QLabel("Whose utterances to add?"))
 		self.participantCombo = QComboBox()
 		self.participantCombo.setFixedWidth(300)
 		self.participantCombo.addItems(["None", "All", "Users only", "Target user only", "Non-target user only", "Robot only", "Target and Robot only"])
 		self.participantCombo.currentIndexChanged.connect(self.changeParticipantCombo)
+		dialogHistoryLayout.addWidget(self.participantCombo)
 
+		dialogHistoryLayout.addWidget(QLabel("Which dialog to add?"))
 		self.contextCombo = QComboBox()
 		self.contextCombo.setFixedWidth(300)
 		self.contextCombo.addItems(["Whole dialog history", "Most recent turns"])
 		self.contextCombo.currentIndexChanged.connect(self.changeContextCombo)
+		dialogHistoryLayout.addWidget(self.contextCombo)
 
+		dialogHistoryLayout.addWidget(QLabel("Maximum number of turns to be added"))
 		self.numTurns = QSpinBox()
 		self.numTurns.setFixedWidth(50)
 		self.numTurns.setMinimum(1)
 		self.numTurns.setMaximum(100)
 		self.numTurns.setSingleStep(1)
+		dialogHistoryLayout.addWidget(self.numTurns)
 
+		dialogHistoryWidget = QWidget()
+		dialogHistoryWidget.setLayout(dialogHistoryLayout)
+
+		# Behavior parameters
+		behaviorLayout = QVBoxLayout()
+		behaviorLayout.setAlignment(Qt.AlignLeft)
+		header = QLabel("Behavior parameters")
+		font = QFont()
+		font.setBold(True)
+		header.setFont(font)
+		behaviorLayout.addWidget(header)
+		behaviorLayout.addWidget(QLabel("Gaze behavior for response"))
 		self.gazeCombo = QComboBox()
 		self.gazeCombo.setFixedWidth(200)
 		gazeItems = [""] + ["Human " + str(hid) for hid in human_ids] + ["Target", "No target", "Non-target first", "Non-target random", "Any random", "Multiparty shift"]
@@ -197,6 +226,7 @@ class TalkLLMWindow(QDialog):
 			self.gazeCombo.setCurrentIndex(gazeItems.index(init_gaze))
 		except ValueError:
 			self.gazeCombo.setCurrentIndex(0)
+		behaviorLayout.addWidget(self.gazeCombo)
 
 		bargeInLayout = QHBoxLayout()
 		self.bargeInCheck = QCheckBox()
@@ -204,6 +234,26 @@ class TalkLLMWindow(QDialog):
 		bargeInLayout.addWidget(QLabel("Handle barge-in?"))
 		bargeInLayout.addWidget(self.bargeInCheck)
 		bargeInLayout.addStretch(1)
+		behaviorLayout.addLayout(bargeInLayout)
+
+		behaviorWidget = QWidget()
+		behaviorWidget.setLayout(behaviorLayout)
+
+		#Fallback utterance
+		fallbackLayout = QVBoxLayout()
+		fallbackLayout.setAlignment(Qt.AlignLeft)
+		header = QLabel("Fallback utterance")
+		font = QFont()
+		font.setBold(True)
+		header.setFont(font)
+		fallbackLayout.addWidget(header)
+		fallbackLayout.addWidget(QLabel("What should be said in case of error?"))
+		self.fallbackBox = QLineEdit()
+		fallbackLayout.addWidget(self.fallbackBox)
+
+		fallbackWidget = QWidget()
+		fallbackWidget.setLayout(fallbackLayout)
+
 
 		buttons = QDialogButtonBox(
 			QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
@@ -211,20 +261,19 @@ class TalkLLMWindow(QDialog):
 		buttons.accepted.connect(self.accept)
 		buttons.rejected.connect(self.reject)
 
+		dialogHistoryWidget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+		behaviorWidget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+		fallbackWidget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+
+		addedInformationLayout.addWidget(dialogHistoryWidget, alignment=Qt.AlignTop | Qt.AlignLeft)
+		addedInformationLayout.addWidget(behaviorWidget, alignment=Qt.AlignTop | Qt.AlignLeft)
+		addedInformationLayout.addWidget(fallbackWidget, alignment=Qt.AlignTop | Qt.AlignLeft)
+
 		layout.addWidget(QLabel("Label"))
 		layout.addWidget(self.label)
 		layout.addWidget(QLabel("Prompt"))
 		layout.addLayout(promptLayout)
-		layout.addWidget(QLabel("Information to be added below prompt"))
-		layout.addWidget(QLabel("Whose utterances to add?"))
-		layout.addWidget(self.participantCombo)
-		layout.addWidget(QLabel("Which dialog to add?"))
-		layout.addWidget(self.contextCombo)
-		layout.addWidget(QLabel("Maximum number of turns to be added"))
-		layout.addWidget(self.numTurns)
-		layout.addWidget(QLabel("Gaze behavior for response"))
-		layout.addWidget(self.gazeCombo)
-		layout.addLayout(bargeInLayout)
+		layout.addLayout(addedInformationLayout)
 		layout.addWidget(buttons)
 		self.setLayout(layout)
 
