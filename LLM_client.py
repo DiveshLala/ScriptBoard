@@ -17,7 +17,6 @@ class Client:
 	def start_connecting(self):
 		# Establishing a server with robust error handling
 		RETRY_WAIT = 3
-		MAX_JSON_FAIL = 10
 		while True:
 			try:
 				self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -32,7 +31,6 @@ class Client:
 						time.sleep(RETRY_WAIT)
 						continue
 
-					import struct
 					while self.connected:
 						try:
 							# まず4バイトで長さを受信
