@@ -374,7 +374,10 @@ class ScriptProcessor:
 					elif node["type"] == "gemini_decision":
 						self.send_message_to_llm_client(llm_message(prompt, "gemini"))
 					elif node["type"] == "lmstudio_decision":
-						self.send_message_to_llm_client(llm_message(prompt, "lmstudio"))
+						local_llms = self.parent_window.getLocalLLMSetting()
+						info = local_llms[node["model name"]]
+						conn = {"IP": info["IP"], "port": info["port"]}
+						self.send_message_to_llm_client(llm_message(prompt, "lmstudio", conn_info=conn))
 					while self.llm_client.response == None or len(self.llm_client.response) == 0:
 						time.sleep(0.1)
 					llm_response = self.llm_client.response
@@ -452,7 +455,10 @@ class ScriptProcessor:
 				elif node["type"] == "gemini_variable":
 					self.send_message_to_llm_client(llm_message(prompt, "gemini"))
 				elif node["type"] == "lmstudio_variable":
-					self.send_message_to_llm_client(llm_message(prompt, "lmstudio"))
+					local_llms = self.parent_window.getLocalLLMSetting()
+					info = local_llms[node["model name"]]
+					conn = {"IP": info["IP"], "port": info["port"]}
+					self.send_message_to_llm_client(llm_message(prompt, "lmstudio", conn_info=conn))
 				while self.llm_client.response == None or len(self.llm_client.response) == 0:
 					time.sleep(0.1)
 				print("LLM response", self.llm_client.response)
@@ -1079,6 +1085,7 @@ class ScriptProcessor:
 		self.server.send_message(message)
 
 	def send_message_to_llm_client(self, message):
+		print("message", message)
 		self.llm_client.send_message(message)
 
 	def update_monitoring_window(self):

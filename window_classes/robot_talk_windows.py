@@ -158,10 +158,10 @@ class TalkLLMWindow(QDialog):
 		self.modelCombo = QComboBox()
 		self.modelCombo.setFixedWidth(100)
 		self.modelName = init_modelname
-		if self.modelName == "GPT":
+		if self.modelName.upper() == "GPT":
 			self.modelCombo.addItem("GPT")
 			self.modelCombo.setEnabled(False)
-		elif self.modelName == "Gemini":
+		elif self.modelName.upper() == "GEMINI":
 			self.modelCombo.addItem("Gemini")
 			self.modelCombo.setEnabled(False)
 		else:

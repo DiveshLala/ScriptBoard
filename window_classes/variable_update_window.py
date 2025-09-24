@@ -243,13 +243,29 @@ class VariableUpdateWindow(QDialog):
 
 
 class LLMVariableUpdateWindow(QDialog):
-	def __init__(self, initLabel, initPrompt, initVariable, variableList):
+	def __init__(self, initLabel, initPrompt, initVariable, variableList, init_modelname, localModels):
 		super().__init__()
 
 		self.variableList = variableList
 
 		self.setWindowTitle("LLM Variable update")
 		layout = QVBoxLayout()
+
+		self.modelCombo = QComboBox()
+		self.modelCombo.setFixedWidth(100)
+		self.modelName = init_modelname
+		if self.modelName.upper() == "GPT":
+			self.modelCombo.addItem("GPT")
+			self.modelCombo.setEnabled(False)
+		elif self.modelName.upper() == "GEMINI":
+			self.modelCombo.addItem("Gemini")
+			self.modelCombo.setEnabled(False)
+		else:
+			for x in localModels:
+				self.modelCombo.addItem(x)
+			items = [self.modelCombo.itemText(i) for i in range(self.modelCombo.count())]
+			if self.modelName in items:
+				self.modelCombo.setCurrentText(self.modelName)
 
 		if initPrompt != None:
 			initPromptText = initPrompt.text_prompt
@@ -318,6 +334,8 @@ class LLMVariableUpdateWindow(QDialog):
 
 		layout.addWidget(QLabel("Label"))
 		layout.addWidget(self.label)
+		layout.addWidget(QLabel("Model"))
+		layout.addWidget(self.modelCombo)
 		layout.addWidget(QLabel("Prompt"))
 		layout.addLayout(promptLayout)
 		layout.addWidget(QLabel("Information to be added below prompt"))

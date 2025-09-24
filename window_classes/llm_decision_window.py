@@ -5,11 +5,27 @@ from condition import Condition, isConditionValid
 
 
 class LLMDecisionWindow(QDialog):
-	def __init__(self, initPrompt, initLabel, initConditions, variable_list):
+	def __init__(self, initPrompt, initLabel, initConditions, variable_list, init_modelname, localModels):
 		super().__init__()
 
 		self.setWindowTitle("LLM Decision")
 		layout = QVBoxLayout()
+
+		self.modelCombo = QComboBox()
+		self.modelCombo.setFixedWidth(100)
+		self.modelName = init_modelname
+		if self.modelName.upper() == "GPT":
+			self.modelCombo.addItem("GPT")
+			self.modelCombo.setEnabled(False)
+		elif self.modelName.upper() == "GEMINI":
+			self.modelCombo.addItem("Gemini")
+			self.modelCombo.setEnabled(False)
+		else:
+			for x in localModels:
+				self.modelCombo.addItem(x)
+			items = [self.modelCombo.itemText(i) for i in range(self.modelCombo.count())]
+			if self.modelName in items:
+				self.modelCombo.setCurrentText(self.modelName)
 
 		self.conditions = []
 
@@ -116,6 +132,8 @@ class LLMDecisionWindow(QDialog):
 
 		layout.addWidget(QLabel("Label"))
 		layout.addWidget(self.label)
+		layout.addWidget(QLabel("Model Name"))
+		layout.addWidget(self.modelCombo)
 		layout.addWidget(QLabel("Prompt"))
 		layout.addLayout(promptLayout)
 		layout.addWidget(QLabel("Information to be added below prompt"))

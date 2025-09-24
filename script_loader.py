@@ -160,6 +160,7 @@ def loadScript(window,scene,jsondata=None):
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
 			node.prompt = prompt
+			node.modelName = "GPT"
 		elif nodeType == "gemini_decision":
 			pixmap = QPixmap("pics/gemini_decision.png")
 			node = LLMDecisionNode(id, pixmap.width(), pixmap.height(), scene, "gemini")
@@ -167,6 +168,7 @@ def loadScript(window,scene,jsondata=None):
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
 			node.prompt = prompt
+			node.modelName = "Gemini"
 		elif nodeType == "lmstudio_decision":
 			pixmap = QPixmap("pics/lmstudio_decision.png")
 			node = LLMDecisionNode(id, pixmap.width(), pixmap.height(), scene, "lmstudio")
@@ -174,6 +176,10 @@ def loadScript(window,scene,jsondata=None):
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
 			node.prompt = prompt
+			try:
+				node.modelName = data[i]["model name"]
+			except Exception as e:
+				node.modelName = ""
 		elif nodeType == "turn_based_decision":
 			pixmap = QPixmap("pics/turn_based_decision.png")
 			node = TurnBasedDecisionNode(id, pixmap.width(), pixmap.height(), scene)
@@ -204,6 +210,7 @@ def loadScript(window,scene,jsondata=None):
 			node.prompt = prompt
 			node.variable = data[i]["variable"]
 			node.labelText = data[i]["label"]
+			node.modelName = "gpt"
 		elif nodeType == "gemini_variable":
 			pixmap = QPixmap("pics/gemini_variable.png")
 			node = LLMVariableUpdateNode(id, pixmap.width(), pixmap.height(), scene, "gemini")
@@ -212,6 +219,7 @@ def loadScript(window,scene,jsondata=None):
 			node.prompt = prompt
 			node.variable = data[i]["variable"]
 			node.labelText = data[i]["label"]
+			node.modelName = "gemini"
 		elif nodeType == "lmstudio_variable":
 			pixmap = QPixmap("pics/lmstudio_variable.png")
 			node = LLMVariableUpdateNode(id, pixmap.width(), pixmap.height(), scene, "lmstudio")
@@ -220,6 +228,10 @@ def loadScript(window,scene,jsondata=None):
 			node.prompt = prompt
 			node.variable = data[i]["variable"]
 			node.labelText = data[i]["label"]
+			try:
+				node.modelName = data[i]["model name"]
+			except Exception as e:
+				node.modelName = ""
 		elif nodeType == "function":
 			pixmap = QPixmap("pics/python_function.png")
 			node = PythonFunctionNode(id, pixmap.width(), pixmap.height(), scene)

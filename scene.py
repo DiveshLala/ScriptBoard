@@ -368,6 +368,12 @@ class Scene(QGraphicsScene):
 			if isinstance(n, RobotLLMNode) and n.llm != "gpt" and n.llm != "gemini":
 				if len(n.modelName) > 0:
 					models.append(n.modelName)
+			if isinstance(n, LLMVariableUpdateNode) and n.llm != "gpt" and n.llm != "gemini":
+				if len(n.modelName) > 0:
+					models.append(n.modelName)
+			if isinstance(n, LLMDecisionNode) and n.llm != "gpt" and n.llm != "gemini":
+				if len(n.modelName) > 0:
+					models.append(n.modelName)
 		return set(models)
 
 	

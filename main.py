@@ -1094,7 +1094,7 @@ def playScript(window, nodeID=None):
 						localModels = w.scene.getAllUsedLocalModels()
 						localModelSettings = w.getMainWindow().local_llm_setting
 
-						if len(localModelSettings) == 0 or len(localModels) == 0:
+						if len(localModelSettings) == 0:
 							dlg = QMessageBox()
 							dlg.setWindowTitle("No LM Studio Models")
 							dlg.setText("This script uses LM Studio but no models are defined in the local LLM list. Run anyway?")

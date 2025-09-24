@@ -450,6 +450,7 @@ class RobotLLMNode(RobotNode):
 	def setLLM(self, llm, localModels):
 		self.llm = llm
 		self.set_type("robot_" + llm)
+		print(self.llm)
 		if llm == "gpt":
 			self.modelName = "GPT"
 		elif llm == "gemini":
@@ -575,9 +576,17 @@ class LLMDecisionNode(DialogNode):
 		self.prompt = DialogPrompt("", "None", "Whole dialog history", 1)
 		self.conditions = []
 		self.llm = llm
+		if self.llm == "gpt":
+			self.modelName = "GPT"
+		elif self.llm == "gemini":
+			self.modelName = "Gemini"
+		else:
+			self.modelName = ""
 	
 	def mouseDoubleClickEvent(self, e):
-		dlg = llm_decision.LLMDecisionWindow(self.prompt, self.labelText, [c.condition for c in self.connectors if isinstance(c, ConditionOutputJoint) and c.condition.comparator != "is other"], self.parent_scene.getVariables())
+		localModels = self.parent_scene.getLocalModeList()
+		conditions = [c.condition for c in self.connectors if isinstance(c, ConditionOutputJoint) and c.condition.comparator != "is other"]
+		dlg = llm_decision.LLMDecisionWindow(self.prompt, self.labelText, conditions, self.parent_scene.getVariables(), self.modelName, localModels)
 		accept = dlg.exec()
 		if accept:
 
@@ -620,6 +629,7 @@ class LLMDecisionNode(DialogNode):
 			inputConnectors = [c for c in self.connectors if not isinstance(c, ConditionOutputJoint)]
 			self.connectors = inputConnectors + tempConnectors
 			self.labelText = dlg.label.text()
+			self.modelName = dlg.modelCombo.currentText()
 			self.updateDialogLabel()
 			self.parent_scene.setSceneChanged(True)
 	
@@ -628,11 +638,22 @@ class LLMDecisionNode(DialogNode):
 		infoDict["type"] = self.llm + "_decision"
 		infoDict["label"] = self.labelText
 		infoDict["prompt"] = self.prompt.retrieveInfo()
+		infoDict["model name"] = self.modelName
 		return infoDict
 
 	def setLLM(self, llm, localModels):
 		self.llm = llm
 		self.set_type(llm + "_decision")
+		if llm == "gpt":
+			self.modelName = "GPT"
+		elif llm == "gemini":
+			self.modelName = "Gemini"
+		elif llm == "lmstudio":
+			if len(localModels) == 0:
+				self.modelName = ""
+			else:
+				self.modelName = localModels[0]
+		
 
 class RandomDecisionNode(DialogNode):
 
@@ -973,14 +994,22 @@ class LLMVariableUpdateNode(DialogNode):
 		self.prompt = DialogPrompt("", "None", "Whole dialog history", 1)
 		self.variable = None
 		self.llm = llm
+		if self.llm == "gpt":
+			self.modelName = "GPT"
+		elif self.llm == "gemini":
+			self.modelName = "Gemini"
+		else:
+			self.modelName = ""
 
 	def mouseDoubleClickEvent(self, e):
-		dlg = variable_update.LLMVariableUpdateWindow(self.labelText, self.prompt, self.variable, self.parent_scene.getVariables())
+		localModels = self.parent_scene.getLocalModeList()
+		dlg = variable_update.LLMVariableUpdateWindow(self.labelText, self.prompt, self.variable, self.parent_scene.getVariables(), self.modelName, localModels)
 		accept = dlg.exec()
 		if accept:
 			self.prompt = DialogPrompt(dlg.promptBox.toPlainText(), dlg.participantCombo.currentText(), dlg.contextCombo.currentText(), dlg.numTurns.value())
 			self.variable = dlg.variableCombo.currentText()
 			self.labelText = dlg.label.text()
+			self.modelName = dlg.modelCombo.currentText()
 		self.updateDialogLabel()
 	
 	def retrieveInfo(self):
@@ -989,11 +1018,21 @@ class LLMVariableUpdateNode(DialogNode):
 		infoDict["type"] = self.llm + "_variable"
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		infoDict["label"] = self.labelText
+		infoDict["model name"] = self.modelName
 		return infoDict
 
 	def setLLM(self, llm, localModels):
 		self.llm = llm
 		self.set_type(llm + "_variable")
+		if llm == "gpt":
+			self.modelName = "GPT"
+		elif llm == "gemini":
+			self.modelName = "Gemini"
+		elif llm == "lmstudio":
+			if len(localModels) == 0:
+				self.modelName = ""
+			else:
+				self.modelName = localModels[0]
 
 
 class PythonFunctionNode(DialogNode):
