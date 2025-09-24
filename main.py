@@ -560,7 +560,7 @@ class ScriptMainWindow(QMainWindow):
 		dlg.exec()
 	
 	def showLocalLLMs(self):
-		dlg = local_llm_window.LocalLLMWindow(self.local_llm_setting)
+		dlg = local_llm_window.LocalLLMWindow(self.local_llm_setting, self.scene)
 		dlg.exec()
 		localLLMList = dlg.localLLMList
 		modelnum = localLLMList.rowCount()
@@ -1097,28 +1097,27 @@ def playScript(window, nodeID=None):
 						if len(localModelSettings) == 0:
 							dlg = QMessageBox()
 							dlg.setWindowTitle("No LM Studio Models")
-							dlg.setText("This script uses LM Studio but no models are defined in the local LLM list. Run anyway?")
-							dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+							dlg.setText("There are no local LLM models set in the script. Please define them by clicking on the local LLM window.")
 							ret = dlg.exec()
-							if ret == QMessageBox.Yes:
-								break
-							else:
-								return
+							return
 							
 						# check for LM Studio local models
 						LMStudio_available = 0
 						for m in localModels:
-							try:
+							if m not in localModelSettings:
+								dlg = QMessageBox()
+								dlg.setWindowTitle("Local LLM does not exist")
+								dlg.setText("The defined local LLM model " + m +  " is used but not defined in the local LLM list.")
+								ret = dlg.exec()
+								return
+							else:
 								setting = localModelSettings[m]
 								LMStudio_available = check_for_LMStudio(setting["IP"], setting["port"])
-							except KeyError as e:
-								print(e)
-								pass
 							
 						if LMStudio_available != 0:
 							dlg = QMessageBox()
 							dlg.setWindowTitle("Run without LLM?")
-							dlg.setText("This script cannot connect to a defined LM Studio model. Run anyway?")
+							dlg.setText("This script cannot connect to the defined LM Studio model. Run anyway?")
 							dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 							ret = dlg.exec()
 							if ret == QMessageBox.Yes:

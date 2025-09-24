@@ -1,11 +1,14 @@
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QVBoxLayout, QLabel, QDialog, QPushButton, QHBoxLayout, QLineEdit, QComboBox
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QVBoxLayout, QLabel, QDialog, QPushButton, QHBoxLayout, QLineEdit, QComboBox, QMessageBox
 from PyQt5 import QtCore
 from llm.LLM_API_server import check_for_GPT, check_for_Gemini, check_for_LMStudio
 import time
 
 class LocalLLMWindow(QDialog):
-	def __init__(self, initSettings):
+	def __init__(self, initSettings, scene):
 		super().__init__()
+
+		self.parentScene = scene
+
 		self.setWindowTitle("Local LLM Settings")
 
 		self.localLLMList = QTableWidget(0, 4)
@@ -90,7 +93,7 @@ class LocalLLMWindow(QDialog):
 	def addToLocalLLMList(self):
 		rowCount = self.localLLMList.rowCount()
 
-		if len(self.LLMName.text().strip()) == 0:
+		if len(self.LLMName.text().strip()) == 0 or self.LLMName.text().lower() == "gpt" or self.LLMName.text().lower() == "gemini":
 			return
 	
 		if len(self.IPAddress.text().strip()) == 0:
@@ -138,17 +141,18 @@ class LocalLLMWindow(QDialog):
 		curRow = self.localLLMList.currentRow()
 		if self.localLLMList.item(curRow, 0) == None:
 			return
-		self.localLLMList.removeRow(curRow) 
-		# if self.parentScene.doesNodeUseVariable(varName):
-		# 	dlg = QMessageBox()
-		# 	dlg.setWindowTitle("Delete variable?")
-		# 	dlg.setText("This variable will be removed from the script. Are you sure you want to delete it?")
-		# 	dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-		# 	ret = dlg.exec()
-		# 	if ret == QMessageBox.Yes:
-		# 		self.parentScene.removeVariableFromScript(varName)
-		# 		self.variableList.removeRow(curRow)
-		# else:
-		# 	self.variableList.removeRow(curRow)
+		modelName = self.localLLMList.item(curRow, 0).text()
+		print(modelName)
+		# self.localLLMList.removeRow(curRow) 
+		if self.parentScene.doesScriptUseLocalModel(modelName):
+			dlg = QMessageBox()
+			dlg.setWindowTitle("Delete local model?")
+			dlg.setText("This model is being used and will be removed from the script. Are you sure you want to delete it?")
+			dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+			ret = dlg.exec()
+			if ret == QMessageBox.Yes:
+				self.localLLMList.removeRow(curRow)
+		else:
+			self.localLLMList.removeRow(curRow)
 	
 		

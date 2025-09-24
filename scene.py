@@ -355,7 +355,7 @@ class Scene(QGraphicsScene):
 					#change to a single condition
 					if len(condition.conditions) == 1:
 						n.condition = condition.conditions[0]
-						
+
 			elif isinstance(n, LLMDecisionNode):
 				n.prompt.text_prompt = n.prompt.text_prompt.replace("Variable(" + varName + ")", "")
 			elif isinstance(n, LLMVariableUpdateNode):
@@ -398,6 +398,19 @@ class Scene(QGraphicsScene):
 				if len(n.modelName) > 0:
 					models.append(n.modelName)
 		return set(models)
+
+	def doesScriptUseLocalModel(self, modelName):
+		for n in self.items():
+			if isinstance(n, RobotLLMNode) and n.llm != "gpt" and n.llm != "gemini":
+				if n.modelName == modelName:
+					return True
+			if isinstance(n, LLMVariableUpdateNode) and n.llm != "gpt" and n.llm != "gemini":
+				if n.modelName == modelName:
+					return True
+			if isinstance(n, LLMDecisionNode) and n.llm != "gpt" and n.llm != "gemini":
+				if n.modelName == modelName:
+					return True
+		return False
 
 	
 	def getStartNode(self):
