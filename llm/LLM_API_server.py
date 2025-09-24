@@ -26,11 +26,9 @@ except ImportError:
 
 GPT_API_INFO = {}
 GEMINI_API_INFO = {}
-LMSTUDIO_ADDRESS = {}
 
 GPT_AVAILABLE = False
 GEMINI_AVAILABLE = False
-LMSTUDIO_AVAILABLE = False
 
 #class for sending message to server
 class Server():
@@ -116,7 +114,7 @@ class Server():
 			self.process_GPT_prompt(prompt, recv_type)
 		elif llm == "gemini" and GEMINI_AVAILABLE:
 			self.process_Gemini_prompt(prompt, recv_type)
-		elif llm == "lmstudio" and LMSTUDIO_AVAILABLE:
+		elif llm == "lmstudio":
 			self.process_LMStudio_prompt(prompt, recv_type)
 		else:
 			message = json.dumps({"type": "unavailable", "sentence": "FAIL_RESPONSE", "ended": True})
@@ -328,9 +326,8 @@ def send_Gemini_request(input_prompt, server= None, recv_type="block"):
 			return None
 
 
-def send_LMStudio_request(input_prompt, server = None, recv_type="block"):
-	global LMSTUDIO_ADDRESS
-	lm_ip = "http://" + LMSTUDIO_ADDRESS["ip"] + ":" + LMSTUDIO_ADDRESS["port"] + "/v1"
+def send_LMStudio_request(input_prompt, ip, port, server = None, recv_type="block"):
+	lm_ip = "http://" + ip + ":" + str(port) + "/v1"
 	client = OpenAI(
 		base_url= lm_ip,
 		api_key="lm-studio"  # Any string works
@@ -450,32 +447,6 @@ def get_API_information(api_name, config_file):
 
 		return api_info
 
-	elif api_name == "lmstudio":
-	
-		try:
-			f = open(config_file, "r").readlines()
-		except FileNotFoundError:
-			print("Missing API login information file!", config_file)
-			return None
-
-		ip_address = None
-
-		for x in f:
-			if len(x.strip()) == 0 or len(x.split("=")) <= 1:
-				continue
-
-			element = x.split("=")[0]
-			value = x.split("=")[1].strip()
-
-			if element == "LMSTUDIO_ADDRESS":
-				ip_address = value
-			if element == "LMSTUDIO_PORT":
-				port = value
-		
-		api_info = {"api": "lmstudio", "ip": ip_address, "port": port}
-
-		return api_info
-
 def check_for_GPT():
 	global GPT_API_INFO
 	global GPT_AVAILABLE
@@ -530,31 +501,18 @@ def check_for_Gemini():
 	print("GEMINI AVAILABLE")
 	return 0
 
-def check_for_LMStudio():
+def check_for_LMStudio(ip, port):
 	global OPEN_AI_PACKAGE_AVAILABLE
-	global LMSTUDIO_AVAILABLE
-	global LMSTUDIO_ADDRESS
 
 	if not OPEN_AI_PACKAGE_AVAILABLE:
 		return -1
-	
-	config_file = "./llm/llm_login_info.txt"
-
-	if not os.path.exists(config_file):
-		return -2
-	
-	LMSTUDIO_ADDRESS = get_API_information("lmstudio", config_file)
-
-	if LMSTUDIO_ADDRESS["ip"] == None:
-		return -3
-	
-	response = send_LMStudio_request("Hello, what is your name?")
+		
+	response = send_LMStudio_request("Hello, what is your name?", ip, port)
 
 	if response == None:
 		return -5
 
-	LMSTUDIO_AVAILABLE = True
-	print("LM STUDIO AVAILABLE")
+	print("LM STUDIO model found")
 	return 0
 
 def send_failure_message_for_stream(server):

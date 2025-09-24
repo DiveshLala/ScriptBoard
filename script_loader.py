@@ -47,6 +47,10 @@ def loadScript(window,scene,jsondata=None):
 			loadScript(subwindow, subwindow.scene, jsondata= data[i]["nodes"])
 			continue
 
+
+		if i == "Local LLMs":
+			window.local_llm_setting = data[i]
+			continue
 		#nodes
 		id = int(data[i]["id"])
 		if id > maxID:

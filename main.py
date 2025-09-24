@@ -36,6 +36,7 @@ import window_classes.word_list_window as word_list_window
 import window_classes.subsequences_window as subsequences_window
 import window_classes.monitoring_window as monitoring_window
 import window_classes.llm_list_window as llm_list_window
+import window_classes.local_llm_window as local_llm_window
 import script_loader
 from scene import Scene
 from llm.LLM_API_server import check_for_GPT, check_for_Gemini, check_for_LMStudio
@@ -61,6 +62,7 @@ class ScriptMainWindow(QMainWindow):
 		self.monitoringUpdate.connect(self.updateMonitoringWindow)
 		self.monitoringClose.connect(self.closeMonitoringWindow)
 		self.centeringUpdate.connect(self.centerNode)
+		self.local_llm_setting = {}
 		self.setServers()
 		self.setCanvas()
 		self.makeToolBar()
@@ -75,7 +77,7 @@ class ScriptMainWindow(QMainWindow):
 		self.variables = []
 		self.environment = []
 		self.subsequences = []
-	
+		
 	def setSubWindows(self):
 		self.tabbedWindow = TabbedWindow()
 		self.tabbedWindow.addMainTab(self.view)
@@ -383,6 +385,12 @@ class ScriptMainWindow(QMainWindow):
 		llms_button.setToolTip("LLM selection")
 		self.bottomToolbar.addWidget(llms_button)
 
+		local_llm_button = QToolButton(self)
+		local_llm_button.setIcon(QIcon('pics/local_llm.png'))
+		local_llm_button.clicked.connect(self.showLocalLLMs)
+		local_llm_button.setToolTip("Local LLM settings")
+		self.bottomToolbar.addWidget(local_llm_button)
+
 		spacer = QWidget()
 		spacer.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 		self.bottomToolbar.addWidget(spacer)
@@ -548,9 +556,24 @@ class ScriptMainWindow(QMainWindow):
 			self.removeSubSequenceWindow(x)
 	
 	def showLLMs(self):
-		dlg = llm_list_window.LLMListWindow()
+		dlg = llm_list_window.LLMListWindow(self.local_llm_setting)
 		dlg.exec()
 	
+	def showLocalLLMs(self):
+		dlg = local_llm_window.LocalLLMWindow(self.local_llm_setting)
+		dlg.exec()
+		localLLMList = dlg.localLLMList
+		modelnum = localLLMList.rowCount()
+		self.local_llm_setting = {}
+		for i in range(modelnum):
+			modelName = localLLMList.item(i, 0).text()
+			modelType = localLLMList.item(i, 1).text()
+			modelIP = localLLMList.item(i, 2).text()
+			modelPort = int(localLLMList.item(i, 3).text())
+			settings = {"type": modelType, "IP": modelIP, "port": modelPort}
+			self.local_llm_setting[modelName] = settings
+		self.scene.setSceneChanged(True)
+
 	def addSubSequenceWindow(self, name):
 		subwindow = ScriptSubWindow(name)
 		subwindow.idctr = self.idctr
@@ -682,6 +705,7 @@ class ScriptMainWindow(QMainWindow):
 			environment["Human" + str(humCt)] = y
 			humCt += 1
 		nodes["Environment"] = environment
+		nodes["Local LLMs"] = self.local_llm_setting
 		return nodes
 
 	#call can come from other scene so need to check everything
@@ -845,6 +869,9 @@ class ScriptSubWindow(ScriptMainWindow):
 
 	def initializeVariables(self):
 		return super().initializeVariables()
+
+	def loadLocalLLMList(self):
+		return super().loadLocalLLMList()
 
 	def openInitialScript(self):
 		pass
