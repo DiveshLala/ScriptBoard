@@ -270,6 +270,7 @@ class Scene(QGraphicsScene):
 		for n in self.items():
 			if isinstance(n, ConditionOutputJoint):
 				condition = n.condition
+				print(condition)
 				if isinstance(condition, Condition):
 					if condition.targetObject == "Variable(" + name + ")":
 						return True
@@ -277,16 +278,24 @@ class Scene(QGraphicsScene):
 					for c in condition.conditions:
 						if c.targetObject == "Variable(" + name + ")":
 							return True
+			elif isinstance(n, LLMDecisionNode):
+				if "Variable(" + name + ")" in n.prompt.text_prompt:
+					return True
+			elif isinstance(n, LLMVariableUpdateNode):
+				if "Variable(" + name + ")" in n.prompt.text_prompt:
+					return True
+				if n.variable == name:
+					return True
 			elif isinstance(n, VariableUpdateNode):
 				if name in [x[0] for x in n.variableUpdates]:
 					return True
 				if any("Variable(" + name + ")" in s for s in [x[1] for x in n.variableUpdates]):
 					return True
+			elif isinstance(n, RobotLLMNode):
+				if "Variable(" + name + ")" in n.prompt.text_prompt:
+					return True
 			elif isinstance(n, RobotNode):
 				if "Variable(" + name + ")" in n.dialog:
-					return True
-			elif isinstance(n, GPTVariableUpdateNode) or isinstance(n, GeminiVariableUpdateNode):
-				if n.variable == name:
 					return True
 		return False
 
@@ -301,6 +310,16 @@ class Scene(QGraphicsScene):
 					for c in condition.conditions:
 						if c.targetObject == "Variable(" + oldName + ")":
 							c.targetObject = "Variable(" + newName + ")"
+			
+			elif isinstance(n, VariableDecisionNode):
+				n.labelText = n.labelText.replace(oldName, newName)
+				n.updateDialogLabel()
+			elif isinstance(n, LLMDecisionNode):
+				n.prompt.text_prompt = n.prompt.text_prompt.replace("Variable(" + oldName + ")", "Variable(" + newName + ")")
+			elif isinstance(n, LLMVariableUpdateNode):
+				n.prompt.text_prompt = n.prompt.text_prompt.replace("Variable(" + oldName + ")", "Variable(" + newName + ")")
+				if n.variable == oldName:
+					n.variable = newName
 			elif isinstance(n, VariableUpdateNode):
 				#variable used as target
 				match = [ind for ind, x in enumerate(n.variableUpdates) if x[0] == oldName]
@@ -312,11 +331,11 @@ class Scene(QGraphicsScene):
 				matches = [ind for ind, x in enumerate(n.variableUpdates) if "Variable(" + oldName + ")" in x[1]]
 				for i in matches:
 					n.variableUpdates[i][1] = n.variableUpdates[i][1].replace(oldName, newName)
+			elif isinstance(n, RobotLLMNode):
+				n.prompt.text_prompt = n.prompt.text_prompt.replace("Variable(" + oldName + ")", "Variable(" + newName + ")")
 			elif isinstance(n, RobotNode):
 				n.dialog = n.dialog.replace("Variable(" + oldName + ")", "Variable(" + newName + ")")
-			elif isinstance(n, GPTVariableUpdateNode) or isinstance(n, GeminiVariableUpdateNode):
-				if n.variable == oldName:
-					n.variable = newName
+
 	
 	def removeVariableFromScript(self, varName):
 		for n in self.items():
@@ -336,6 +355,11 @@ class Scene(QGraphicsScene):
 					#change to a single condition
 					if len(condition.conditions) == 1:
 						n.condition = condition.conditions[0]
+						
+			elif isinstance(n, LLMDecisionNode):
+				n.prompt.text_prompt = n.prompt.text_prompt.replace("Variable(" + varName + ")", "")
+			elif isinstance(n, LLMVariableUpdateNode):
+				n.prompt.text_prompt = n.prompt.text_prompt.replace("Variable(" + varName + ")", "")
 			elif isinstance(n, VariableUpdateNode):
 				match = [x for x in n.variableUpdates if x[0] == varName]
 				if len(match) > 0:
@@ -343,13 +367,12 @@ class Scene(QGraphicsScene):
 				matches = [x for x in n.variableUpdates if "Variable(" + varName + ")" in x[1]]
 				for m in matches:
 					n.variableUpdates.remove(m)
+			elif isinstance(n, RobotLLMNode):
+				n.prompt.text_prompt = n.prompt.text_prompt.replace("Variable(" + varName + ")", "")
 			elif isinstance(n, RobotNode):
 				n.dialog = n.dialog.replace("Variable(" + varName + ")", "")
 				n.labelText = ""
 				n.updateDialogLabel()
-			elif isinstance(n, GPTVariableUpdateNode) or isinstance(n, GeminiVariableUpdateNode):
-				if n.variable == varName:
-					n.variable = None
 
 	def doesScriptUseLLM(self, llm):
 		for n in self.items():
