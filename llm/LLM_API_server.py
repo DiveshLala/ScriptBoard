@@ -42,6 +42,7 @@ class Server():
 		self.input_utterance = ""
 		self.turn = None
 		self.send_lock = False
+		self.server_type = "main LLM"
 
 	def connect(self):
 		serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,10 +51,10 @@ class Server():
 		serversock.listen(10)
 
 		while True:
-			print('LLM module waiting for connection from server...')
+			print(self.server_type, 'module waiting for connection from server...')
 			print('at port %d' % self.server_port)
 			self.client_socket, client_address = serversock.accept()
-			print('client connected to LLM module')
+			print('Client connected to', self.server_type, 'module')
 			self.is_connected = True
 
 			buffer = ""
@@ -199,6 +200,17 @@ class Server():
 
 		print("==========================================================")
 
+
+# Fillers handles on a separate port
+# At the moment only handles LMStudio models
+class FillerServer(Server):
+
+	def __init__(self, port):
+		super().__init__(port)
+		self.server_type = "filler"
+
+
+
 def send_GPT_request(input_prompt, server = None, recv_type="block"):
 
 	try:
@@ -318,7 +330,7 @@ def send_Gemini_request(input_prompt, server= None, recv_type="block"):
 
 def send_LMStudio_request(input_prompt, server = None, recv_type="block"):
 	global LMSTUDIO_ADDRESS
-	lm_ip = "http://" + LMSTUDIO_ADDRESS["ip"] + ":1234/v1"
+	lm_ip = "http://" + LMSTUDIO_ADDRESS["ip"] + ":" + LMSTUDIO_ADDRESS["port"] + "/v1"
 	client = OpenAI(
 		base_url= lm_ip,
 		api_key="lm-studio"  # Any string works
@@ -457,8 +469,10 @@ def get_API_information(api_name, config_file):
 
 			if element == "LMSTUDIO_ADDRESS":
 				ip_address = value
+			if element == "LMSTUDIO_PORT":
+				port = value
 		
-		api_info = {"api": "lmstudio", "ip": ip_address}
+		api_info = {"api": "lmstudio", "ip": ip_address, "port": port}
 
 		return api_info
 
@@ -552,10 +566,15 @@ def send_failure_message_for_stream(server):
 
 
 server = Server(5042)
+filler_server = FillerServer(6042)
 
 t = threading.Thread(target=server.connect)
 t.daemon = True
 t.start()
+
+t2 = threading.Thread(target=filler_server.connect)
+t2.daemon = True
+t2.start()
 
 if __name__ == "__main__":
 	while True:

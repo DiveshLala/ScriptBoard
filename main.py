@@ -3,7 +3,7 @@ import pathlib
 import script_processor
 import threading
 from script_server import Server
-from LLM_client import Client
+from llm.LLM_client import Client, FillerClient
 from PyQt5 import QtCore
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QPixmap, QPainter, QIcon, QKeySequence
@@ -1121,6 +1121,11 @@ llm_client = Client("localhost", 5042)
 t2 = threading.Thread(target=llm_client.start_connecting, args=())
 t2.daemon = True
 t2.start()
+
+filler_client = FillerClient("localhost", 6042)
+t3 = threading.Thread(target=filler_client.start_connecting, args=())
+t3.daemon = True
+t3.start()
 
 app = QApplication(sys.argv)
 app.setWindowIcon(QIcon('pics/favicon.ico'))
