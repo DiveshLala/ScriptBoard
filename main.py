@@ -853,6 +853,9 @@ class ScriptMainWindow(QMainWindow):
 	
 	def undoLatestAction(self, scene):
 		clipboard.undoAction(scene)
+	
+	def getLocalLLMSetting(self):
+		return self.local_llm_setting
 
 
 class ScriptSubWindow(ScriptMainWindow):
@@ -870,8 +873,8 @@ class ScriptSubWindow(ScriptMainWindow):
 	def initializeVariables(self):
 		return super().initializeVariables()
 
-	def loadLocalLLMList(self):
-		return super().loadLocalLLMList()
+	def getLocalLLMSetting(self):
+		return super().local_llm_setting
 
 	def openInitialScript(self):
 		pass
@@ -1086,21 +1089,43 @@ def playScript(window, nodeID=None):
 								return
 						break
 				
-				# for w in windows:
-				# 	if w.scene.doesScriptUseLLM("lmstudio"):
-				# 		# check for LM Studio
-				# 		LMStudio_available = check_for_LMStudio()
-				# 		if LMStudio_available != 0:
-				# 			dlg = QMessageBox()
-				# 			dlg.setWindowTitle("Run without LLM?")
-				# 			dlg.setText("This script uses LM Studio but this is not currently available. Run anyway?")
-				# 			dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-				# 			ret = dlg.exec()
-				# 			if ret == QMessageBox.Yes:
-				# 				break
-				# 			else:
-				# 				return
-				# 		break
+				for w in windows:
+					if w.scene.doesScriptUseLLM("lmstudio"):
+						localModels = w.scene.getAllUsedLocalModels()
+						localModelSettings = w.getMainWindow().local_llm_setting
+
+						if len(localModelSettings) == 0 or len(localModels) == 0:
+							dlg = QMessageBox()
+							dlg.setWindowTitle("No LM Studio Models")
+							dlg.setText("This script uses LM Studio but no models are defined in the local LLM list. Run anyway?")
+							dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+							ret = dlg.exec()
+							if ret == QMessageBox.Yes:
+								break
+							else:
+								return
+							
+						# check for LM Studio local models
+						LMStudio_available = 0
+						for m in localModels:
+							try:
+								setting = localModelSettings[m]
+								LMStudio_available = check_for_LMStudio(setting["IP"], setting["port"])
+							except KeyError as e:
+								print(e)
+								pass
+							
+						if LMStudio_available != 0:
+							dlg = QMessageBox()
+							dlg.setWindowTitle("Run without LLM?")
+							dlg.setText("This script cannot connect to a defined LM Studio model. Run anyway?")
+							dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+							ret = dlg.exec()
+							if ret == QMessageBox.Yes:
+								break
+							else:
+								return
+						break
 
 				window.processor = script_processor.ScriptProcessor(window)
 				window.play_button.setEnabled(False)

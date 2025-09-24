@@ -263,6 +263,9 @@ class Scene(QGraphicsScene):
 	def getEnvironment(self):
 		return self.parentWindow.getMainWindow().environment
 
+	def getLocalModeList(self):
+		return [x for x in self.parentWindow.getMainWindow().local_llm_setting]
+
 	def doesNodeUseVariable(self, name):
 		for n in self.items():
 			if isinstance(n, ConditionOutputJoint):
@@ -358,6 +361,14 @@ class Scene(QGraphicsScene):
 				elif n.icon_type == llm + "_decision":
 					return True
 		return False
+
+	def getAllUsedLocalModels(self):
+		models = []
+		for n in self.items():
+			if isinstance(n, RobotLLMNode) and n.llm != "gpt" and n.llm != "gemini":
+				if len(n.modelName) > 0:
+					models.append(n.modelName)
+		return set(models)
 
 	
 	def getStartNode(self):
@@ -585,7 +596,7 @@ class Scene(QGraphicsScene):
 		self.getMainWindow().addActionToClipboard(createAction(self, "delete multiple nodes", nodes, None, None))
 	
 	def setLLMForNode(self, node, llm):
-		node.setLLM(llm)
+		node.setLLM(llm, self.getLocalModeList())
 		if isinstance(node, RobotLLMNode):
 			if llm == "gpt":
 				node.setPixmap(QPixmap('pics/robot_gpt.png'))

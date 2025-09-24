@@ -305,7 +305,10 @@ class ScriptProcessor:
 				elif node["type"] == "robot_gemini":
 					self.send_message_to_llm_client(llm_message(prompt, "gemini", recv_type="stream"))
 				elif node["type"] == "robot_lmstudio":
-					self.send_message_to_llm_client(llm_message(prompt, "lmstudio", recv_type="stream"))
+					local_llms = self.parent_window.getLocalLLMSetting()
+					info = local_llms[node["model name"]]
+					conn = {"IP": info["IP"], "port": info["port"]}
+					self.send_message_to_llm_client(llm_message(prompt, "lmstudio", recv_type="stream", conn_info=conn))
 				self.llm_client.streaming = True
 
 				#gaze for each sentence
@@ -1133,8 +1136,8 @@ def tts_parameter_message(parameter, value):
 	message = json.dumps({"type": "tts parameter change", "parameter name": parameter, "value": value})
 	return message
 
-def llm_message(prompt, llm, recv_type="block"):
-	message = json.dumps({"prompt": prompt, "type": recv_type, "llm": llm})
+def llm_message(prompt, llm, recv_type="block", conn_info=""):
+	message = json.dumps({"prompt": prompt, "type": recv_type, "llm": llm, "connection_info": conn_info})
 	return message
 
 def get_string_between_brackets(s):

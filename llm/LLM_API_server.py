@@ -108,6 +108,7 @@ class Server():
 		print("processing", message)
 		prompt = message["prompt"]
 		recv_type = message['type']
+		conn_info = message["connection_info"]
 		llm = message["llm"]
 		print("Using", llm, recv_type)
 		if llm == "gpt" and GPT_AVAILABLE:
@@ -115,7 +116,7 @@ class Server():
 		elif llm == "gemini" and GEMINI_AVAILABLE:
 			self.process_Gemini_prompt(prompt, recv_type)
 		elif llm == "lmstudio":
-			self.process_LMStudio_prompt(prompt, recv_type)
+			self.process_LMStudio_prompt(prompt, recv_type, conn_info)
 		else:
 			message = json.dumps({"type": "unavailable", "sentence": "FAIL_RESPONSE", "ended": True})
 			self.send_message(message)
@@ -173,13 +174,15 @@ class Server():
 		
 		print("==========================================================")
 	
-	def process_LMStudio_prompt(self, prompt, recv_type):
+	def process_LMStudio_prompt(self, prompt, recv_type, connection_info):
 		print("=======================================================")
 		print("RECEIVE TYPE", recv_type)
 		print(prompt)
 		start_time = time.time()
+		ip = connection_info["IP"]
+		port = connection_info["port"]
 		if recv_type == "block":
-			response = send_LMStudio_request(prompt)
+			response = send_LMStudio_request(prompt, ip, port)
 			print(response)
 			if response != None:
 				print("Response time for", recv_type, ":", time.time() - start_time)
@@ -194,7 +197,7 @@ class Server():
 			self.send_lock = False
 		
 		elif recv_type == "stream":
-			response = send_LMStudio_request(prompt, server = self, recv_type="stream")
+			response = send_LMStudio_request(prompt, ip, port, server = self, recv_type="stream")
 
 		print("==========================================================")
 

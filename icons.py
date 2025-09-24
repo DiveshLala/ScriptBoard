@@ -382,15 +382,25 @@ class RobotLLMNode(RobotNode):
 		self.gaze = ""
 		self.fallback = ""
 		self.llm = llm
+		if self.llm == "gpt":
+			self.modelName = "GPT"
+		elif self.llm == "gemini":
+			self.modelName = "Gemini"
+		else:
+			self.modelName = ""
 	
 	def mouseDoubleClickEvent(self, e):
-		dlg = robot_window.TalkLLMWindow(self.prompt, self.labelText, self.bargeIn, [x[0] for x in self.parent_scene.getEnvironment()], [x[0] for x in self.parent_scene.getVariables()], self.gaze, self.fallback)
+		environment = [x[0] for x in self.parent_scene.getEnvironment()]
+		variables = [x[0] for x in self.parent_scene.getVariables()]
+		localModels = self.parent_scene.getLocalModeList()
+		dlg = robot_window.TalkLLMWindow(self.prompt, self.labelText, self.bargeIn, environment, variables, self.gaze, self.fallback, self.modelName, localModels)
 		accept = dlg.exec()
 		if accept == 1:
 			self.prompt = DialogPrompt(dlg.promptBox.toPlainText(), dlg.participantCombo.currentText(), dlg.contextCombo.currentText(), dlg.numTurns.value())
 			self.labelText = dlg.label.text()
 			self.gaze = dlg.gazeCombo.currentText()
 			self.fallback = dlg.fallbackBox.text()
+			self.modelName = dlg.modelCombo.currentText()
 			self.updateDialogLabel()
 
 			#barge in condition
@@ -433,12 +443,22 @@ class RobotLLMNode(RobotNode):
 		infoDict["barge-in"] = self.bargeIn
 		infoDict["gaze"] = self.gaze
 		infoDict["fallback"] = self.fallback
+		infoDict["model name"] = self.modelName
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		return infoDict
 	
-	def setLLM(self, llm):
+	def setLLM(self, llm, localModels):
 		self.llm = llm
 		self.set_type("robot_" + llm)
+		if llm == "gpt":
+			self.modelName = "GPT"
+		elif llm == "gemini":
+			self.modelName = "Gemini"
+		elif llm == "lmstudio":
+			if len(localModels) == 0:
+				self.modelName = ""
+			else:
+				self.modelName = localModels[0]
 
 class VariableUpdateNode(DialogNode):
 
@@ -610,7 +630,7 @@ class LLMDecisionNode(DialogNode):
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		return infoDict
 
-	def setLLM(self, llm):
+	def setLLM(self, llm, localModels):
 		self.llm = llm
 		self.set_type(llm + "_decision")
 
@@ -971,7 +991,7 @@ class LLMVariableUpdateNode(DialogNode):
 		infoDict["label"] = self.labelText
 		return infoDict
 
-	def setLLM(self, llm):
+	def setLLM(self, llm, localModels):
 		self.llm = llm
 		self.set_type(llm + "_variable")
 

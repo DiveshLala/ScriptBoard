@@ -91,6 +91,7 @@ def loadScript(window,scene,jsondata=None):
 				node.fallback = data[i]["fallback"]
 			except Exception as e:
 				node.fallback = ""
+			node.modelName = "gpt"
 		elif nodeType == "robot_gemini":
 			pixmap = QPixmap("pics/robot_gemini.png")
 			node = RobotLLMNode(id, pixmap.width(), pixmap.height(), scene, "gemini")
@@ -100,6 +101,11 @@ def loadScript(window,scene,jsondata=None):
 			node.prompt = prompt
 			node.gaze = data[i]["gaze"]
 			node.bargeIn = data[i]["barge-in"]
+			try:
+				node.fallback = data[i]["fallback"]
+			except Exception as e:
+				node.fallback = ""
+			node.modelName = "gemini"
 		elif nodeType == "robot_lmstudio":
 			pixmap = QPixmap("pics/robot_lmstudio.png")
 			node = RobotLLMNode(id, pixmap.width(), pixmap.height(), scene, "lmstudio")
@@ -109,6 +115,14 @@ def loadScript(window,scene,jsondata=None):
 			node.prompt = prompt
 			node.gaze = data[i]["gaze"]
 			node.bargeIn = data[i]["barge-in"]
+			try:
+				node.fallback = data[i]["fallback"]
+			except Exception as e:
+				node.fallback = ""
+			try:
+				node.modelName = data[i]["model name"]
+			except Exception as e:
+				node.modelName = ""
 		elif nodeType == "human":
 			pixmap = QPixmap("pics/human.png")
 			node = HumanNode(id, pixmap.width(), pixmap.height(), scene)

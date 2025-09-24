@@ -134,7 +134,7 @@ class TalkWindow(QDialog):
 
 
 class TalkLLMWindow(QDialog):
-	def __init__(self, initPrompt, initLabel, bargeIn, human_ids, variables, init_gaze, init_fallback):
+	def __init__(self, initPrompt, initLabel, bargeIn, human_ids, variables, init_gaze, init_fallback, init_modelname, localModels):
 		super().__init__()
 
 		self.setWindowTitle("LLM Dialogue")
@@ -154,6 +154,22 @@ class TalkLLMWindow(QDialog):
 		self.label = QLineEdit()
 		self.label.setFixedWidth(300)
 		self.label.setText(initLabel)
+
+		self.modelCombo = QComboBox()
+		self.modelCombo.setFixedWidth(100)
+		self.modelName = init_modelname
+		if self.modelName == "GPT":
+			self.modelCombo.addItem("GPT")
+			self.modelCombo.setEnabled(False)
+		elif self.modelName == "Gemini":
+			self.modelCombo.addItem("Gemini")
+			self.modelCombo.setEnabled(False)
+		else:
+			for x in localModels:
+				self.modelCombo.addItem(x)
+			items = [self.modelCombo.itemText(i) for i in range(self.modelCombo.count())]
+			if self.modelName in items:
+				self.modelCombo.setCurrentText(self.modelName)
 
 		promptLayout = QHBoxLayout()
 		self.promptBox = QTextEdit()
@@ -272,6 +288,8 @@ class TalkLLMWindow(QDialog):
 
 		layout.addWidget(QLabel("Label"))
 		layout.addWidget(self.label)
+		layout.addWidget(QLabel("Model"))
+		layout.addWidget(self.modelCombo)
 		layout.addWidget(QLabel("Prompt"))
 		layout.addLayout(promptLayout)
 		layout.addLayout(addedInformationLayout)
