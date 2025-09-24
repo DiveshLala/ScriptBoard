@@ -1086,21 +1086,21 @@ def playScript(window, nodeID=None):
 								return
 						break
 				
-				for w in windows:
-					if w.scene.doesScriptUseLLM("lmstudio"):
-						# check for LM Studio
-						LMStudio_available = check_for_LMStudio()
-						if LMStudio_available != 0:
-							dlg = QMessageBox()
-							dlg.setWindowTitle("Run without LLM?")
-							dlg.setText("This script uses LM Studio but this is not currently available. Run anyway?")
-							dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-							ret = dlg.exec()
-							if ret == QMessageBox.Yes:
-								break
-							else:
-								return
-						break
+				# for w in windows:
+				# 	if w.scene.doesScriptUseLLM("lmstudio"):
+				# 		# check for LM Studio
+				# 		LMStudio_available = check_for_LMStudio()
+				# 		if LMStudio_available != 0:
+				# 			dlg = QMessageBox()
+				# 			dlg.setWindowTitle("Run without LLM?")
+				# 			dlg.setText("This script uses LM Studio but this is not currently available. Run anyway?")
+				# 			dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+				# 			ret = dlg.exec()
+				# 			if ret == QMessageBox.Yes:
+				# 				break
+				# 			else:
+				# 				return
+				# 		break
 
 				window.processor = script_processor.ScriptProcessor(window)
 				window.play_button.setEnabled(False)
