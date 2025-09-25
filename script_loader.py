@@ -1,4 +1,9 @@
-from icons import *
+from nodes.basic_nodes import *
+from nodes.llm_nodes import *
+from nodes.participant_nodes import *
+from nodes.timing_nodes import *
+from nodes.variable_nodes import *
+from nodes.decision_nodes import *
 import json
 from condition import Condition, MultiCondition
 from prompt import DialogPrompt
@@ -130,7 +135,10 @@ def loadScript(window,scene,jsondata=None):
 			pixmap = QPixmap("pics/human_target.png")
 			node = HumanTargetNode(id, pixmap.width(), pixmap.height(), scene)
 			node.new_target = data[i]["new target"]
-			node.labelText = "Target is\n" + node.new_target
+			if node.new_target != None and len(node.new_target) > 0:
+				node.labelText = "Target is\n" + str(node.new_target)
+			else:
+				node.labelText = ""
 		elif nodeType == "start":
 			pixmap = QPixmap("pics/start.png")
 			node = StartNode(id, pixmap.width(), pixmap.height(), scene)

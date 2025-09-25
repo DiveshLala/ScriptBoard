@@ -7,7 +7,12 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QPixmap
 from condition import Condition, MultiCondition
 from node_connections import InputJoint, OutputJoint, ConditionOutputJoint, ConnectorLine
-from icons import *
+from nodes.basic_nodes import *
+from nodes.llm_nodes import *
+from nodes.participant_nodes import *
+from nodes.timing_nodes import *
+from nodes.variable_nodes import *
+from nodes.decision_nodes import *
 
 
 class Scene(QGraphicsScene):

@@ -142,8 +142,6 @@ class LocalLLMWindow(QDialog):
 		if self.localLLMList.item(curRow, 0) == None:
 			return
 		modelName = self.localLLMList.item(curRow, 0).text()
-		print(modelName)
-		# self.localLLMList.removeRow(curRow) 
 		if self.parentScene.doesScriptUseLocalModel(modelName):
 			dlg = QMessageBox()
 			dlg.setWindowTitle("Delete local model?")

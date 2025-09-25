@@ -1,4 +1,4 @@
-from icons import OutputJoint, InputJoint
+from nodes.basic_nodes import OutputJoint, InputJoint
 
 class ClipBoard:
 

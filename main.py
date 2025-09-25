@@ -26,7 +26,8 @@ from PyQt5.QtWidgets import (
 	 QMenu,
 	 QAction,
 	 QActionGroup)
-from icons import Icon, DialogNode
+from nodes.basic_nodes import Icon, DialogNode
+from nodes.llm_nodes import RobotLLMNode, LLMDecisionNode, LLMVariableUpdateNode
 from clipboard import ClipBoard
 import json
 import threading
@@ -40,7 +41,6 @@ import window_classes.local_llm_window as local_llm_window
 import script_loader
 from scene import Scene
 from llm.LLM_API_server import check_for_GPT, check_for_Gemini, check_for_LMStudio
-from icons import RobotLLMNode, LLMDecisionNode, LLMVariableUpdateNode
 import ctypes
 
 if sys.platform == "win32":
@@ -927,6 +927,7 @@ class MyView(QGraphicsView):
 
 		selectedNodes = [x for x in self.scene().items() if x.isSelected() == True and isinstance(x, DialogNode)]
 		if len(selectedNodes) == 1:
+			print(selectedNodes[0], isinstance(selectedNodes[0], RobotLLMNode))
 			if isinstance(selectedNodes[0], RobotLLMNode) or isinstance(selectedNodes[0], LLMDecisionNode) or isinstance(selectedNodes[0], LLMVariableUpdateNode):
 				submenu = QMenu("Set LLM", self)
 				GPTAction = QAction("GPT", self)
