@@ -93,6 +93,10 @@ def loadScript(window,scene,jsondata=None):
 			node.gaze = data[i]["gaze"]
 			node.bargeIn = data[i]["barge-in"]
 			try:
+				node.filler = data[i]["filler"]
+			except Exception as e:
+				node.filler = ""
+			try:
 				node.fallback = data[i]["fallback"]
 			except Exception as e:
 				node.fallback = ""
@@ -107,6 +111,10 @@ def loadScript(window,scene,jsondata=None):
 			node.gaze = data[i]["gaze"]
 			node.bargeIn = data[i]["barge-in"]
 			try:
+				node.filler = data[i]["filler"]
+			except Exception as e:
+				node.filler = ""
+			try:
 				node.fallback = data[i]["fallback"]
 			except Exception as e:
 				node.fallback = ""
@@ -120,6 +128,10 @@ def loadScript(window,scene,jsondata=None):
 			node.prompt = prompt
 			node.gaze = data[i]["gaze"]
 			node.bargeIn = data[i]["barge-in"]
+			try:
+				node.filler = data[i]["filler"]
+			except Exception as e:
+				node.filler = ""
 			try:
 				node.fallback = data[i]["fallback"]
 			except Exception as e:

@@ -300,6 +300,8 @@ class ScriptProcessor:
 				x = DialogPrompt(prompt_info["text prompt"], prompt_info["speakers"], prompt_info["history"], prompt_info["turns"])
 				x.parseVariables(self.variable_dict)
 				prompt = self.create_llm_prompt(x)
+
+				# send LLM prompt
 				if node["type"] == "robot_gpt":
 					self.send_message_to_llm_client(llm_message(prompt, "gpt", recv_type="stream"))
 				elif node["type"] == "robot_gemini":
@@ -318,6 +320,25 @@ class ScriptProcessor:
 					gaze_targets = cycle([u.id for u in self.users])
 				else:
 					gaze_targets = cycle([gaze_id])
+				
+				# if there is a filler then play it before the LLM utterance
+				if len(node["filler"]) > 0:
+					filler = node["filler"]
+					if filler.startswith("wordlist="):
+						filler_file = filler.replace("wordlist=", "")
+						candidates = []
+						f = open("./word_lists/" + filler_file + ".words", "r", encoding="utf-8")
+						[candidates.append(word.strip()) for word in f.readlines() if len(word) > 0]
+						picked = random.choice(candidates)
+						self.send_message_to_server(utterance_message(picked, "filler", "", "", next(gaze_targets)))
+					else:
+						self.send_message_to_server(utterance_message(filler, "filler", "", "", next(gaze_targets)))
+						
+					while len(self.received_robot_utterance.strip()) == 0:
+						time.sleep(0.01)	
+					self.dialog_history.append(["ROBOT", filler])
+					self.received_robot_utterance = ""
+					self.update_monitoring_window()
 
 				while self.llm_client.streaming or len(self.llm_client.streamed_sentences) > 0:
 					if len(self.llm_client.streamed_sentences) > 0:

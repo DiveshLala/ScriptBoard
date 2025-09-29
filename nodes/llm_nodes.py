@@ -4,7 +4,7 @@ import window_classes.robot_talk_windows as robot_window
 import window_classes.variable_update_window as variable_update
 import window_classes.llm_decision_window as llm_decision
 from condition import Condition
-from node_connections import *
+from node_connections import ConditionOutputJoint
 from prompt import DialogPrompt
 from nodes.basic_nodes import DialogNode
 from nodes.participant_nodes import RobotNode
@@ -25,18 +25,22 @@ class RobotLLMNode(RobotNode):
 			self.modelName = "Gemini"
 		else:
 			self.modelName = ""
+		self.filler = ""
 	
 	def mouseDoubleClickEvent(self, e):
 		environment = [x[0] for x in self.parent_scene.getEnvironment()]
 		variables = [x[0] for x in self.parent_scene.getVariables()]
+		# wordlists = 
 		localModels = self.parent_scene.getLocalModeList()
-		dlg = robot_window.TalkLLMWindow(self.prompt, self.labelText, self.bargeIn, environment, variables, self.gaze, self.fallback, self.modelName, localModels)
+		dlg = robot_window.TalkLLMWindow(self.prompt, self.labelText, self.bargeIn, environment, variables, self.gaze, self.fallback, self.modelName, self.filler, localModels)
 		accept = dlg.exec()
 		if accept == 1:
 			self.prompt = DialogPrompt(dlg.promptBox.toPlainText(), dlg.participantCombo.currentText(), dlg.contextCombo.currentText(), dlg.numTurns.value())
 			self.labelText = dlg.label.text()
 			self.gaze = dlg.gazeCombo.currentText()
 			self.fallback = dlg.fallbackBox.text()
+			self.filler = dlg.getFiller()
+			print(self.filler)
 			self.modelName = dlg.modelCombo.currentText()
 			self.updateDialogLabel()
 
@@ -80,6 +84,7 @@ class RobotLLMNode(RobotNode):
 		infoDict["barge-in"] = self.bargeIn
 		infoDict["gaze"] = self.gaze
 		infoDict["fallback"] = self.fallback
+		infoDict["filler"] = self.filler
 		infoDict["model name"] = self.modelName
 		infoDict["prompt"] = self.prompt.retrieveInfo()
 		return infoDict
@@ -87,7 +92,6 @@ class RobotLLMNode(RobotNode):
 	def setLLM(self, llm, localModels):
 		self.llm = llm
 		self.set_type("robot_" + llm)
-		print(self.llm)
 		if llm == "gpt":
 			self.modelName = "GPT"
 		elif llm == "gemini":

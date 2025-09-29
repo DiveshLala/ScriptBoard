@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QDialogButtonBox, QTextEdit, QVBoxLayout, QHBoxLayout, QLabel, QDialog, QLineEdit, QComboBox, QSpinBox, QPushButton, QCheckBox, QWidget, QSizePolicy
+from PyQt5.QtWidgets import QDialogButtonBox, QTextEdit, QVBoxLayout, QHBoxLayout, QLabel, QDialog, QLineEdit, QComboBox, QSpinBox, QPushButton, QCheckBox, QWidget, QSizePolicy, QRadioButton, QButtonGroup
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QFont
+import os
 
 class TalkWindow(QDialog):
 	def __init__(self, initInfo, environment, variables, bargeIn):
@@ -11,7 +12,7 @@ class TalkWindow(QDialog):
 
 		textLayout = QHBoxLayout()
 		self.textBox = QTextEdit()
-		self.textBox.setFixedWidth(400)
+		self.textBox.setFixedWidth(500)
 		self.setInitialText(initInfo[0])
 
 
@@ -134,7 +135,7 @@ class TalkWindow(QDialog):
 
 
 class TalkLLMWindow(QDialog):
-	def __init__(self, initPrompt, initLabel, bargeIn, human_ids, variables, init_gaze, init_fallback, init_modelname, localModels):
+	def __init__(self, initPrompt, initLabel, bargeIn, human_ids, variables, init_gaze, init_fallback, init_modelname, init_filler, localModels):
 		super().__init__()
 
 		self.setWindowTitle("LLM Dialogue")
@@ -271,6 +272,8 @@ class TalkLLMWindow(QDialog):
 		fallbackWidget = QWidget()
 		fallbackWidget.setLayout(fallbackLayout)
 
+		# #Fillers
+		fillerWidget = self.createFillerOptions(init_filler)
 
 		buttons = QDialogButtonBox(
 			QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
@@ -281,10 +284,12 @@ class TalkLLMWindow(QDialog):
 		dialogHistoryWidget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
 		behaviorWidget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
 		fallbackWidget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+		fillerWidget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
 
 		addedInformationLayout.addWidget(dialogHistoryWidget, alignment=Qt.AlignTop | Qt.AlignLeft)
 		addedInformationLayout.addWidget(behaviorWidget, alignment=Qt.AlignTop | Qt.AlignLeft)
 		addedInformationLayout.addWidget(fallbackWidget, alignment=Qt.AlignTop | Qt.AlignLeft)
+		addedInformationLayout.addWidget(fillerWidget, alignment=Qt.AlignTop | Qt.AlignLeft)
 
 		layout.addWidget(QLabel("Label"))
 		layout.addWidget(self.label)
@@ -342,6 +347,58 @@ class TalkLLMWindow(QDialog):
 		self.promptBox.moveCursor(QTextCursor.End)
 	
 
+	def createFillerOptions(self, init_filler):
+		fillerLayout = QVBoxLayout()
+		fillerLayout.setAlignment(Qt.AlignLeft)
+		header = QLabel("Fillers")
+		font = QFont()
+		font.setBold(True)
+		header.setFont(font)
+		fillerLayout.addWidget(header)
+		fillerLayout.addWidget(QLabel("Add filler before utterance"))
+
+		self.fillerNoneRadio = QRadioButton("None")
+		fillerLayout.addWidget(self.fillerNoneRadio)
+
+		fillerFixedLayout = QHBoxLayout()
+		self.fillerFixedRadio = QRadioButton("Fixed")
+		self.fillerFixedBox = QLineEdit()
+		fillerFixedLayout.addWidget(self.fillerFixedRadio)
+		fillerFixedLayout.addWidget(self.fillerFixedBox)
+		fillerLayout.addLayout(fillerFixedLayout)
+
+		fillerRandomLayout = QHBoxLayout()
+		self.fillerRandomRadio = QRadioButton("Word list (random)")
+		self.fillerRandomCombo = QComboBox()
+		for x in os.listdir("./word_lists/"):
+			if x.endswith(".words"):
+				self.fillerRandomCombo.addItem(x.replace(".words", ""))
+		fillerRandomLayout.addWidget(self.fillerRandomRadio)
+		fillerRandomLayout.addWidget(self.fillerRandomCombo)
+		fillerLayout.addLayout(fillerRandomLayout)
+
+		if len(init_filler) == 0:
+			self.fillerNoneRadio.setChecked(True)
+		elif init_filler.startswith("wordlist="):
+			self.fillerRandomRadio.setChecked(True)
+			self.fillerRandomCombo.setCurrentText(init_filler.replace("wordlist=", ""))
+		else:
+			self.fillerFixedBox.setText(init_filler)
+			self.fillerFixedRadio.setChecked(True)
+		
+		if self.fillerRandomCombo.count() == 0:
+			self.fillerRandomRadio.setEnabled(False)
+			self.fillerRandomCombo.setEnabled(False)
+			if self.fillerRandomRadio.isChecked():
+				self.fillerRandomRadio.setChecked(False)
+				self.fillerNoneRadio.setChecked(True)
+
+		fillerWidget = QWidget()
+		fillerWidget.setLayout(fillerLayout)
+
+		return fillerWidget
+	
+
 	def setInitialPrompt(self, text):
 
 		if len(text) == 0:
@@ -372,3 +429,12 @@ class TalkLLMWindow(QDialog):
 
 		# #change to normal font
 		cursor = self.getCursor()
+
+
+	def getFiller(self):
+		if self.fillerFixedRadio.isChecked():
+			return self.fillerFixedBox.text()
+		elif self.fillerRandomRadio.isChecked() and self.fillerRandomRadio.isEnabled():
+			return "wordlist=" + self.fillerRandomCombo.currentText()
+		else:
+			return ""
