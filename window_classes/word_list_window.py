@@ -133,7 +133,7 @@ class NewListWindow(QDialog):
 		msg = isvalid(newfile)
 		if msg == -1:
 			msgBox = QMessageBox()
-			msgBox.setText("Please specify a valid file name!")
+			msgBox.setText("Please specify a valid file name! No spaces allowed")
 			msgBox.exec()
 		elif msg == -2:
 			msgBox = QMessageBox()
@@ -148,6 +148,9 @@ def isvalid(filename):
 	try:
 		validate_filename(filename)
 	except ValidationError:
+		return -1
+	
+	if " " in filename:
 		return -1
 
 	for x in os.listdir("./word_lists"):
