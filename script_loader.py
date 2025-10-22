@@ -52,10 +52,16 @@ def loadScript(window,scene,jsondata=None):
 			loadScript(subwindow, subwindow.scene, jsondata= data[i]["nodes"])
 			continue
 
-
+		#Local LLMS
 		if i == "Local LLMs":
 			window.local_llm_setting = data[i]
+			for modelname in data[i]:
+				model_info = data[i][modelname]
+				# Add custom models
+				if model_info["type"] == "Custom":
+					window.add_custom_LLM_client(modelname, model_info["IP"], model_info["port"])
 			continue
+		
 		#nodes
 		id = int(data[i]["id"])
 		if id > maxID:
@@ -140,6 +146,27 @@ def loadScript(window,scene,jsondata=None):
 				node.modelName = data[i]["model name"]
 			except Exception as e:
 				node.modelName = ""
+		elif nodeType == "robot_custom":
+			pixmap = QPixmap("pics/robot_custom.png")
+			node = RobotLLMNode(id, pixmap.width(), pixmap.height(), scene, "custom")
+			node.labelText = data[i]["label"]
+			promptInfo = data[i]["prompt"]
+			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
+			node.prompt = prompt
+			node.gaze = data[i]["gaze"]
+			node.bargeIn = data[i]["barge-in"]
+			try:
+				node.filler = data[i]["filler"]
+			except Exception as e:
+				node.filler = ""
+			try:
+				node.fallback = data[i]["fallback"]
+			except Exception as e:
+				node.fallback = ""
+			try:
+				node.modelName = data[i]["model name"]
+			except Exception as e:
+				node.modelName = ""
 		elif nodeType == "human":
 			pixmap = QPixmap("pics/human.png")
 			node = HumanNode(id, pixmap.width(), pixmap.height(), scene)
@@ -200,6 +227,17 @@ def loadScript(window,scene,jsondata=None):
 				node.modelName = data[i]["model name"]
 			except Exception as e:
 				node.modelName = ""
+		elif nodeType == "custom_decision":
+			pixmap = QPixmap("pics/custom_decision.png")
+			node = LLMDecisionNode(id, pixmap.width(), pixmap.height(), scene, "custom")
+			node.labelText = data[i]["label"]
+			promptInfo = data[i]["prompt"]
+			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
+			node.prompt = prompt
+			try:
+				node.modelName = data[i]["model name"]
+			except Exception as e:
+				node.modelName = ""
 		elif nodeType == "turn_based_decision":
 			pixmap = QPixmap("pics/turn_based_decision.png")
 			node = TurnBasedDecisionNode(id, pixmap.width(), pixmap.height(), scene)
@@ -243,6 +281,18 @@ def loadScript(window,scene,jsondata=None):
 		elif nodeType == "lmstudio_variable":
 			pixmap = QPixmap("pics/lmstudio_variable.png")
 			node = LLMVariableUpdateNode(id, pixmap.width(), pixmap.height(), scene, "lmstudio")
+			promptInfo = data[i]["prompt"]
+			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
+			node.prompt = prompt
+			node.variable = data[i]["variable"]
+			node.labelText = data[i]["label"]
+			try:
+				node.modelName = data[i]["model name"]
+			except Exception as e:
+				node.modelName = ""
+		elif nodeType == "custom_variable":
+			pixmap = QPixmap("pics/custom_variable.png")
+			node = LLMVariableUpdateNode(id, pixmap.width(), pixmap.height(), scene, "custom")
 			promptInfo = data[i]["prompt"]
 			prompt = DialogPrompt(promptInfo["text prompt"], promptInfo["speakers"], promptInfo["history"], promptInfo["turns"])
 			node.prompt = prompt

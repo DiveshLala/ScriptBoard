@@ -50,6 +50,7 @@ class LocalLLMWindow(QDialog):
 
 		self.typeCombo = QComboBox()
 		self.typeCombo.addItem("LM Studio")
+		self.typeCombo.addItem("Custom")
 		self.typeCombo.setFixedWidth(100)
 		LLMSettingLayout.addWidget(self.typeCombo)
 

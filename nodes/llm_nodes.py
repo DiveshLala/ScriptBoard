@@ -30,8 +30,7 @@ class RobotLLMNode(RobotNode):
 	def mouseDoubleClickEvent(self, e):
 		environment = [x[0] for x in self.parent_scene.getEnvironment()]
 		variables = [x[0] for x in self.parent_scene.getVariables()]
-		# wordlists = 
-		localModels = self.parent_scene.getLocalModeList()
+		localModels = self.retrieveLocalModels()
 		dlg = robot_window.TalkLLMWindow(self.prompt, self.labelText, self.bargeIn, environment, variables, self.gaze, self.fallback, self.modelName, self.filler, localModels)
 		accept = dlg.exec()
 		if accept == 1:
@@ -40,7 +39,6 @@ class RobotLLMNode(RobotNode):
 			self.gaze = dlg.gazeCombo.currentText()
 			self.fallback = dlg.fallbackBox.text()
 			self.filler = dlg.getFiller()
-			print(self.filler)
 			self.modelName = dlg.modelCombo.currentText()
 			self.updateDialogLabel()
 
@@ -96,11 +94,21 @@ class RobotLLMNode(RobotNode):
 			self.modelName = "GPT"
 		elif llm == "gemini":
 			self.modelName = "Gemini"
-		elif llm == "lmstudio":
+		elif llm == "lmstudio" or llm == "custom":
+			localModels = self.retrieveLocalModels()
 			if len(localModels) == 0:
 				self.modelName = ""
 			else:
 				self.modelName = localModels[0]
+	
+	def retrieveLocalModels(self):
+		localModels = self.parent_scene.getLocalModeList()
+		if self.llm == "lmstudio":
+			return [x for x in localModels if localModels[x]["type"] == "LM Studio"]
+		elif self.llm == "custom":
+			return [x for x in localModels if localModels[x]["type"] == "Custom"]
+		else:
+			return None
 
 
 class LLMDecisionNode(DialogNode):
@@ -119,7 +127,7 @@ class LLMDecisionNode(DialogNode):
 			self.modelName = ""
 	
 	def mouseDoubleClickEvent(self, e):
-		localModels = self.parent_scene.getLocalModeList()
+		localModels = self.retrieveLocalModels()
 		conditions = [c.condition for c in self.connectors if isinstance(c, ConditionOutputJoint) and c.condition.comparator != "is other"]
 		dlg = llm_decision.LLMDecisionWindow(self.prompt, self.labelText, conditions, self.parent_scene.getVariables(), self.modelName, localModels)
 		accept = dlg.exec()
@@ -183,11 +191,21 @@ class LLMDecisionNode(DialogNode):
 			self.modelName = "GPT"
 		elif llm == "gemini":
 			self.modelName = "Gemini"
-		elif llm == "lmstudio":
+		elif llm == "lmstudio" or llm == "custom":
+			localModels = self.retrieveLocalModels()
 			if len(localModels) == 0:
 				self.modelName = ""
 			else:
 				self.modelName = localModels[0]
+
+	def retrieveLocalModels(self):
+		localModels = self.parent_scene.getLocalModeList()
+		if self.llm == "lmstudio":
+			return [x for x in localModels if localModels[x]["type"] == "LM Studio"]
+		elif self.llm == "custom":
+			return [x for x in localModels if localModels[x]["type"] == "Custom"]
+		else:
+			return None
 		
 
 class LLMVariableUpdateNode(DialogNode):
@@ -204,7 +222,7 @@ class LLMVariableUpdateNode(DialogNode):
 			self.modelName = ""
 
 	def mouseDoubleClickEvent(self, e):
-		localModels = self.parent_scene.getLocalModeList()
+		localModels = self.retrieveLocalModels()
 		dlg = variable_update.LLMVariableUpdateWindow(self.labelText, self.prompt, self.variable, self.parent_scene.getVariables(), self.modelName, localModels)
 		accept = dlg.exec()
 		if accept:
@@ -230,8 +248,18 @@ class LLMVariableUpdateNode(DialogNode):
 			self.modelName = "GPT"
 		elif llm == "gemini":
 			self.modelName = "Gemini"
-		elif llm == "lmstudio":
+		elif llm == "lmstudio" or llm == "custom":
+			localModels = self.retrieveLocalModels()
 			if len(localModels) == 0:
 				self.modelName = ""
 			else:
 				self.modelName = localModels[0]
+	
+	def retrieveLocalModels(self):
+		localModels = self.parent_scene.getLocalModeList()
+		if self.llm == "lmstudio":
+			return [x for x in localModels if localModels[x]["type"] == "LM Studio"]
+		elif self.llm == "custom":
+			return [x for x in localModels if localModels[x]["type"] == "Custom"]
+		else:
+			return None

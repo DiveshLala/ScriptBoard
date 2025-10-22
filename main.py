@@ -3,7 +3,7 @@ import pathlib
 import script_processor
 import threading
 from script_server import Server
-from llm.LLM_client import Client, FillerClient
+from llm.LLM_client import Client, FillerClient, CustomLLMClient
 from PyQt5 import QtCore
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QPixmap, QPainter, QIcon, QKeySequence
@@ -63,6 +63,7 @@ class ScriptMainWindow(QMainWindow):
 		self.monitoringClose.connect(self.closeMonitoringWindow)
 		self.centeringUpdate.connect(self.centerNode)
 		self.local_llm_setting = {}
+		self.custom_llm_clients = {}
 		self.setServers()
 		self.setCanvas()
 		self.makeToolBar()
@@ -101,7 +102,7 @@ class ScriptMainWindow(QMainWindow):
 		action_group = QActionGroup(self)
 		action_group.setExclusive(True)
 
-		options = ["ChatGPT", "Gemini", "LM Studio"]
+		options = ["ChatGPT", "Gemini", "LM Studio", "Custom"]
 		for option in options:
 			action = QAction(option, self, checkable=True)
 			action.triggered.connect(lambda checked, opt=option: self.updateLLMType(opt, "talk"))
@@ -115,7 +116,7 @@ class ScriptMainWindow(QMainWindow):
 		action_group = QActionGroup(self)
 		action_group.setExclusive(True)
 
-		options = ["ChatGPT", "Gemini", "LM Studio"]
+		options = ["ChatGPT", "Gemini", "LM Studio", "Custom"]
 		for option in options:
 			action = QAction(option, self, checkable=True)
 			action.triggered.connect(lambda checked, opt=option: self.updateLLMType(opt, "decision"))
@@ -130,7 +131,7 @@ class ScriptMainWindow(QMainWindow):
 		action_group = QActionGroup(self)
 		action_group.setExclusive(True)
 
-		options = ["ChatGPT", "Gemini", "LM Studio"]
+		options = ["ChatGPT", "Gemini", "LM Studio", "Custom"]
 		for option in options:
 			action = QAction(option, self, checkable=True)
 			action.triggered.connect(lambda checked, opt=option: self.updateLLMType(opt, "variable"))
@@ -182,6 +183,20 @@ class ScriptMainWindow(QMainWindow):
 				pixmap= QPixmap('pics/lmstudio_variable.png')
 				icon_type = "lmstudio_variable"	
 				tooltip = "LM Studio variable node"
+		
+		elif llm == "Custom":
+			if nodeType == "talk":
+				pixmap= QPixmap('pics/robot_custom.png')
+				icon_type = "robot_custom"
+				tooltip = "Robot Custom node"
+			elif nodeType == "decision":
+				pixmap= QPixmap('pics/custom_decision.png')
+				icon_type = "custom_decision"
+				tooltip = "Custom decision node"	
+			elif nodeType == "variable":
+				pixmap= QPixmap('pics/custom_variable.png')
+				icon_type = "custom_variable"	
+				tooltip = "Custom variable node"
 
 		if nodeType == "talk":
 			self.robot_llm_icon.set_pic(pixmap)
@@ -395,15 +410,17 @@ class ScriptMainWindow(QMainWindow):
 		spacer.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 		self.bottomToolbar.addWidget(spacer)
 
-		python_function_icon = Icon(pixmap=QPixmap('pics/python_function.png'))
-		python_function_icon.set_type("python_function")
-		python_function_icon.setToolTip("Run external Python module")
-		self.bottomToolbar.addWidget(python_function_icon)
+		# python_function_icon = Icon(pixmap=QPixmap('pics/python_function.png'))
+		# python_function_icon.set_type("python_function")
+		# python_function_icon.setToolTip("Run external Python module")
+		# self.bottomToolbar.addWidget(python_function_icon)
+		self.addDraggableIcon('pics/python_function.png', 'python_function', "Run external Python bmodule")
+		self.addDraggableIcon('pics/send_to_dm.png', 'send_to_dm', "Send message to dialogue manager")
 
-		send_to_DM_icon = Icon(pixmap=QPixmap('pics/send_to_dm.png'))
-		send_to_DM_icon.set_type("send_to_dm")
-		send_to_DM_icon.setToolTip("Send message to dialogue manager")
-		self.bottomToolbar.addWidget(send_to_DM_icon)
+		# send_to_DM_icon = Icon(pixmap=QPixmap('pics/send_to_dm.png'))
+		# send_to_DM_icon.set_type("send_to_dm")
+		# send_to_DM_icon.setToolTip("Send message to dialogue manager")
+		# self.bottomToolbar.addWidget(send_to_DM_icon)
 
 		self.addToolBar(self.topToolbar)
 		self.addToolBarBreak()
@@ -411,6 +428,12 @@ class ScriptMainWindow(QMainWindow):
 
 		self.setStatusBar(QStatusBar(self))
 		self.scriptRunning = False
+	
+	def addDraggableIcon(self, icon_filename, icon_type, tooltip):
+		icon = Icon(pixmap=QPixmap(icon_filename))
+		icon.set_type(icon_type)
+		icon.setToolTip(tooltip)
+		self.bottomToolbar.addWidget(icon)
 
 	
 	def makeStatusBar(self):
@@ -556,7 +579,7 @@ class ScriptMainWindow(QMainWindow):
 			self.removeSubSequenceWindow(x)
 	
 	def showLLMs(self):
-		dlg = llm_list_window.LLMListWindow(self.local_llm_setting)
+		dlg = llm_list_window.LLMListWindow(self.local_llm_setting, self.custom_llm_clients)
 		dlg.exec()
 	
 	def showLocalLLMs(self):
@@ -572,7 +595,29 @@ class ScriptMainWindow(QMainWindow):
 			modelPort = int(localLLMList.item(i, 3).text())
 			settings = {"type": modelType, "IP": modelIP, "port": modelPort}
 			self.local_llm_setting[modelName] = settings
+			if modelType == "Custom":
+				# check if there are any new clients
+				if modelName not in self.custom_llm_clients:
+					self.add_custom_LLM_client(modelName, modelIP, modelPort)
+		# remove any old clients
+		clients_to_remove = []
+		for c in self.custom_llm_clients:
+			if c not in self.local_llm_setting:
+				self.custom_llm_clients[c].shutdown()
+				clients_to_remove.append(c)
+		for model in clients_to_remove:
+			del self.custom_llm_clients[model]
+
 		self.scene.setSceneChanged(True)
+	
+	def add_custom_LLM_client(self, name, ip, port):
+		# create a new custom LLM client
+		custom_client = CustomLLMClient(ip, port)
+		t = threading.Thread(target=custom_client.start_connecting, args=())
+		t.daemon = True
+		t.start()
+		self.custom_llm_clients[name] = custom_client
+
 
 	def addSubSequenceWindow(self, name):
 		subwindow = ScriptSubWindow(name)
@@ -936,9 +981,12 @@ class MyView(QGraphicsView):
 				GeminiAction.triggered.connect(lambda: self.scene().setLLMForNode(selectedNodes[0], "gemini"))
 				LMStudioAction = QAction("LM Studio", self)
 				LMStudioAction.triggered.connect(lambda: self.scene().setLLMForNode(selectedNodes[0], "lmstudio"))
+				customAction = QAction("Custom", self)
+				customAction.triggered.connect(lambda: self.scene().setLLMForNode(selectedNodes[0], "custom"))
 				submenu.addAction(GPTAction)
 				submenu.addAction(GeminiAction)
 				submenu.addAction(LMStudioAction)
+				submenu.addAction(customAction)
 				context_menu.addMenu(submenu)
 			copyAction = QAction("Copy node", self)
 			copyAction.triggered.connect(lambda: self.scene().copyNode(selectedNodes))
@@ -1094,7 +1142,8 @@ def playScript(window, nodeID=None):
 					if w.scene.doesScriptUseLLM("lmstudio"):
 						localModels = w.scene.getAllUsedLocalModels()
 						localModelSettings = w.getMainWindow().local_llm_setting
-
+						print(localModels)
+						print(localModelSettings)
 						if len(localModelSettings) == 0:
 							dlg = QMessageBox()
 							dlg.setWindowTitle("No LM Studio Models")
@@ -1106,10 +1155,16 @@ def playScript(window, nodeID=None):
 						LMStudio_available = 0
 						for m in localModels:
 							if m not in localModelSettings:
-								dlg = QMessageBox()
-								dlg.setWindowTitle("Local LLM does not exist")
-								dlg.setText("The defined local LLM model " + m +  " is used but not defined in the local LLM list.")
-								ret = dlg.exec()
+								if m == "":
+									dlg = QMessageBox()
+									dlg.setWindowTitle("Local LLM does not exist")
+									dlg.setText("There is a local LLM model which has no model name.")
+									ret = dlg.exec()
+								else:
+									dlg = QMessageBox()
+									dlg.setWindowTitle("Local LLM does not exist")
+									dlg.setText("The defined local LLM model " + m +  " is used in the script but not defined in the local LLM list.")
+									ret = dlg.exec()
 								return
 							else:
 								setting = localModelSettings[m]
@@ -1169,6 +1224,7 @@ def playScript(window, nodeID=None):
 
 server = Server(5050)
 
+# The LLM server API client
 llm_client = Client("localhost", 5042)
 t2 = threading.Thread(target=llm_client.start_connecting, args=())
 t2.daemon = True

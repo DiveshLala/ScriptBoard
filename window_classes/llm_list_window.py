@@ -4,10 +4,11 @@ from llm.LLM_API_server import check_for_GPT, check_for_Gemini, check_for_LMStud
 import time
 
 class LLMListWindow(QDialog):
-	def __init__(self, local_llms):
+	def __init__(self, local_llms, custom_llm_clients):
 		super().__init__()
 		self.setWindowTitle("List of LLMs")
 		self.local_llms = local_llms
+		self.custom_llm_clients = custom_llm_clients
 
 		self.LLMList = QTableWidget(0, 3)
 		self.LLMList.setHorizontalHeaderLabels(["LLM", "", "Status",])
@@ -50,18 +51,26 @@ class LLMListWindow(QDialog):
 			if local_llms[model]["type"] == "LM Studio":
 				modelName = QTableWidgetItem(model + " (LM Studio)")
 			else:
-				modelName = QTableWidgetItem(model + "(Local)")
+				modelName = QTableWidgetItem(model + "(Custom)")
 			self.LLMList.setItem(rowCt, 0, modelName)
 			modelName.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
 
-			LLMCheckButton = QPushButton("Check status")
-			LLMCheckButton.setObjectName(str(modelName.text()))
-			self.LLMList.setCellWidget(rowCt, 1, LLMCheckButton)
-			LLMCheckButton.clicked.connect(self.checkChanged)
-
-			status = QTableWidgetItem("")
-			self.LLMList.setItem(rowCt, 2, status)
-			status.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+			if local_llms[model]["type"] == "Custom":
+				client = self.custom_llm_clients[model]
+				if client.connected:
+					status = QTableWidgetItem("Available")
+				else:
+					status = QTableWidgetItem("Not available")
+				status.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+				self.LLMList.setItem(rowCt, 2, status)
+			else:
+				LLMCheckButton = QPushButton("Check status")
+				LLMCheckButton.setObjectName(str(modelName.text()))
+				self.LLMList.setCellWidget(rowCt, 1, LLMCheckButton)
+				LLMCheckButton.clicked.connect(self.checkChanged)
+				status = QTableWidgetItem("")
+				self.LLMList.setItem(rowCt, 2, status)
+				status.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
 			rowCt += 1
 	
 	def checkChanged(self):
@@ -84,6 +93,8 @@ class LLMListWindow(QDialog):
 			modelName = llm.replace("(LM Studio)", "").strip()
 			modelInfo = self.local_llms[modelName]
 			available = check_for_LMStudio(modelInfo["IP"], modelInfo["port"])
+		elif "(Custom)" in llm:
+			available = -6
 			
 		if available == -1:
 			self.messageLabel.setText("Python packages are not installed. Use pip to install.")
@@ -100,6 +111,9 @@ class LLMListWindow(QDialog):
 		elif available == -5:
 			self.messageLabel.setText("Cannot connect to LM Studio model. Please check IP and port information.")
 			status = QTableWidgetItem("Not available")
+		elif available == -6:
+			self.messageLabel.setText("Cannot connect to custom model. Please check IP and port information.")
+			status = QTableWidgetItem("Not available")			
 		else:
 			self.messageLabel.setText("")	
 			status = QTableWidgetItem("Available")

@@ -98,6 +98,11 @@ class Scene(QGraphicsScene):
 			node = LLMDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "lmstudio")
 			node.addConnector(drop_pos.x(), drop_pos.y(), -12, node.height/2, "input")
 
+		elif event.source().icon_type == "custom_decision":
+			pixmap = QPixmap("pics/custom_decision.png")
+			node = LLMDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "custom")
+			node.addConnector(drop_pos.x(), drop_pos.y(), -12, node.height/2, "input")
+
 		elif event.source().icon_type == "random_decision":
 			pixmap = QPixmap("pics/random_decision.png")
 			node = RandomDecisionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
@@ -128,6 +133,8 @@ class Scene(QGraphicsScene):
 			node = RobotLLMNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "gemini")
 		elif icon_type == "robot_lmstudio":
 			node = RobotLLMNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "lmstudio")
+		elif icon_type == "robot_custom":
+			node = RobotLLMNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "custom")
 		elif icon_type == "human_target":
 			node = HumanTargetNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 		elif icon_type == "variable_update":
@@ -156,6 +163,8 @@ class Scene(QGraphicsScene):
 			node = LLMVariableUpdateNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "gemini")
 		elif icon_type == "lmstudio_variable":
 			node = LLMVariableUpdateNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "lmstudio")
+		elif icon_type == "custom_variable":
+			node = LLMVariableUpdateNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self, "custom")
 		elif icon_type == "python_function":
 			node = PythonFunctionNode(self.parentWindow.getMainWindow().idctr, pixmap.width(), pixmap.height(), self)
 		elif icon_type == "enter_subseq":
@@ -269,7 +278,7 @@ class Scene(QGraphicsScene):
 		return self.parentWindow.getMainWindow().environment
 
 	def getLocalModeList(self):
-		return [x for x in self.parentWindow.getMainWindow().local_llm_setting]
+		return self.parentWindow.getMainWindow().local_llm_setting
 
 	def doesNodeUseVariable(self, name):
 		for n in self.items():
@@ -394,14 +403,11 @@ class Scene(QGraphicsScene):
 		models = []
 		for n in self.items():
 			if isinstance(n, RobotLLMNode) and n.llm != "gpt" and n.llm != "gemini":
-				if len(n.modelName) > 0:
-					models.append(n.modelName)
+				models.append(n.modelName)
 			if isinstance(n, LLMVariableUpdateNode) and n.llm != "gpt" and n.llm != "gemini":
-				if len(n.modelName) > 0:
-					models.append(n.modelName)
+				models.append(n.modelName)
 			if isinstance(n, LLMDecisionNode) and n.llm != "gpt" and n.llm != "gemini":
-				if len(n.modelName) > 0:
-					models.append(n.modelName)
+				models.append(n.modelName)
 		return set(models)
 
 	def doesScriptUseLocalModel(self, modelName):
@@ -651,6 +657,8 @@ class Scene(QGraphicsScene):
 				node.setPixmap(QPixmap('pics/robot_gemini.png'))
 			elif llm == "lmstudio":
 				node.setPixmap(QPixmap('pics/robot_lmstudio.png'))
+			elif llm == "custom":
+				node.setPixmap(QPixmap('pics/robot_custom.png'))
 		elif isinstance(node, LLMVariableUpdateNode):
 			if llm == "gpt":
 				node.setPixmap(QPixmap('pics/gpt_variable.png'))
@@ -658,6 +666,8 @@ class Scene(QGraphicsScene):
 				node.setPixmap(QPixmap('pics/gemini_variable.png'))
 			elif llm == "lmstudio":
 				node.setPixmap(QPixmap('pics/lmstudio_variable.png'))
+			elif llm == "custom":
+				node.setPixmap(QPixmap('pics/custom_variable.png'))
 		elif isinstance(node, LLMDecisionNode):
 			if llm == "gpt":
 				node.setPixmap(QPixmap('pics/gpt_decision.png'))
@@ -665,6 +675,8 @@ class Scene(QGraphicsScene):
 				node.setPixmap(QPixmap('pics/gemini_decision.png'))
 			elif llm == "lmstudio":
 				node.setPixmap(QPixmap('pics/lmstudio_decision.png'))
+			elif llm == "custom":
+				node.setPixmap(QPixmap('pics/custom_decision.png'))
 		self.setSceneChanged(True)
 
 

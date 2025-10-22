@@ -3,6 +3,8 @@ import time
 import json
 import traceback
 
+# A default client will be created for the LLM API serer
+# This same class can be reused for custom LLM models
 class Client:
 	def __init__(self, host, port):
 		# Server Address (port)
@@ -14,15 +16,20 @@ class Client:
 		self.streaming = False
 		self.streamed_sentences = []
 		self.client_type = "main LLM"
+		self.is_removed = False
 
 	def start_connecting(self):
 		# Establishing a server with robust error handling
 		RETRY_WAIT = 3
 		while True:
+			if self.is_removed:
+				break
 			try:
 				self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				self.soc.settimeout(10)  # 10秒でタイムアウト
 				while not self.connected:
+					if self.is_removed:
+						break
 					try:
 						self.soc.connect((self.HOST, self.PORT))
 						print('Connected to', self.client_type,  'server', self.HOST, self.PORT)
@@ -33,6 +40,8 @@ class Client:
 						continue
 
 					while self.connected:
+						if self.is_removed:
+							break
 						try:
 							# まず4バイトで長さを受信
 							total_data = b''
@@ -109,18 +118,20 @@ class Client:
 							traceback.print_exc()
 							self.connected = False
 							break
+					print("Client has been removed...")
 			except Exception as e:
 				print("Critical error in connection loop:", e)
 				traceback.print_exc()
 			finally:
-				if self.soc:
-					try:
-						self.soc.close()
-					except Exception:
-						pass
-				self.connected = False
-				print(f"Reconnecting in {RETRY_WAIT}s...")
-				time.sleep(RETRY_WAIT)
+				if not self.is_removed:
+					if self.soc:
+						try:
+							self.soc.close()
+						except Exception:
+							pass
+					self.connected = False
+					print(f"Reconnecting in {RETRY_WAIT}s...")
+					time.sleep(RETRY_WAIT)
 
 	def send_message(self, message):
 		if not self.connected:
@@ -138,4 +149,12 @@ class FillerClient(Client):
 	def __init__(self, host, port):
 		super().__init__(host, port)
 		self.client_type = "filler"
+
+class CustomLLMClient(Client):
+	def __init__(self, host, port):
+		super().__init__(host, port)
+		self.client_type = "custom_model"
+	
+	def shutdown(self):
+		self.is_removed = True
 
