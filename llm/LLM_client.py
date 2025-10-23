@@ -35,7 +35,7 @@ class Client:
 						print('Connected to', self.client_type,  'server', self.HOST, self.PORT)
 						self.connected = True
 					except (ConnectionRefusedError, socket.timeout) as e:
-						print(f"Connection failed: {e}. Retrying in {RETRY_WAIT}s...")
+						# print(f"Connection failed: {e}. Retrying in {RETRY_WAIT}s...")
 						time.sleep(RETRY_WAIT)
 						continue
 

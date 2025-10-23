@@ -231,28 +231,13 @@ class ScriptMainWindow(QMainWindow):
 		self.bottomToolbar.setStyleSheet("QToolBar{spacing:15px;padding:5px;}")
 		self.bottomToolbar.setIconSize(QSize(64,64))
 
-		new_button = QToolButton(self)
-		new_button.setIcon(QIcon('pics/new.png'))
-		new_button.clicked.connect(self.newScript)
-		self.topToolbar.addWidget(new_button)
-
-		open_button = QToolButton(self)
-		open_button.setIcon(QIcon('pics/open.png'))
-		open_button.clicked.connect(self.loadScriptFromFileDialog)
-		self.topToolbar.addWidget(open_button)
-
-		save_button = QToolButton(self)
-		save_button.setIcon(QIcon('pics/save.png'))
-		save_button.clicked.connect(self.saveScript)
-		self.topToolbar.addWidget(save_button)
+		self.addButton('pics/new.png', "New script", self.topToolbar,self.newScript)
+		self.addButton('pics/open.png', "Open script", self.topToolbar, self.loadScriptFromFileDialog)
+		self.addButton('pics/save.png', "Save script", self.topToolbar, self.saveScript)
+		self.addButton('pics/save_as.png', "Save script as new file", self.topToolbar, self.saveAsScript)
 
 		self.shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
 		self.shortcut.activated.connect(self.saveScript)
-
-		save_as_button = QToolButton(self)
-		save_as_button.setIcon(QIcon('pics/save_as.png'))
-		save_as_button.clicked.connect(self.saveAsScript)
-		self.topToolbar.addWidget(save_as_button)
 
 		spacer = QWidget()
 		spacer.setFixedWidth(150)
@@ -275,25 +260,10 @@ class ScriptMainWindow(QMainWindow):
 		spacer.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 		self.topToolbar.addWidget(spacer)
 
-		start_icon = Icon(pixmap=QPixmap('pics/start.png'))
-		start_icon.set_type("start")
-		start_icon.setToolTip("Start node")
-		self.topToolbar.addWidget(start_icon)
-
-		human_icon = Icon(pixmap=QPixmap('pics/human.png'))
-		human_icon.set_type("human")
-		human_icon.setToolTip("Human turn node")
-		self.topToolbar.addWidget(human_icon)
-
-		human_target_icon = Icon(pixmap=QPixmap('pics/human_target.png'))
-		human_target_icon.set_type("human_target")
-		human_target_icon.setToolTip("Human target node")
-		self.topToolbar.addWidget(human_target_icon)
-
-		robot_icon = Icon(pixmap=QPixmap('pics/robot.png'))
-		robot_icon.set_type("robot")
-		robot_icon.setToolTip("Robot turn node")
-		self.topToolbar.addWidget(robot_icon)
+		self.addDraggableIcon('pics/start.png', 'start', "Start node", self.topToolbar)
+		self.addDraggableIcon('pics/human.png', 'human', "Human turn node", self.topToolbar)
+		self.addDraggableIcon('pics/human_target.png', 'human_target', "Human target node", self.topToolbar)
+		self.addDraggableIcon('pics/robot.png', 'robot', "Robot turn node", self.topToolbar)
 
 		self.robot_llm_icon = Icon(pixmap=QPixmap('pics/robot_gpt.png'))
 		self.robot_llm_icon.set_type("robot_gpt")
@@ -302,30 +272,15 @@ class ScriptMainWindow(QMainWindow):
 		self.robot_llm_icon.customContextMenuRequested.connect(self.openLLMChoiceRobotTalkMenu)
 		self.topToolbar.addWidget(self.robot_llm_icon)
 
-		tts_params_icon = Icon(pixmap=QPixmap('pics/tts_parameters.png'))
-		tts_params_icon.set_type("tts_parameters")
-		tts_params_icon.setToolTip("Set TTS parameters")
-		self.topToolbar.addWidget(tts_params_icon)
+		self.addDraggableIcon('pics/tts_parameters.png', 'tts_parameters', "Set TTS parameters", self.topToolbar)
 
 		spacer = QWidget()
 		spacer.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 		self.topToolbar.addWidget(spacer)
 
-		wait_icon = Icon(pixmap=QPixmap('pics/wait.png'))
-		wait_icon.set_type("wait")
-		wait_icon.setToolTip("Wait node")
-		self.topToolbar.addWidget(wait_icon)
-
-		timer_icon = Icon(pixmap=QPixmap('pics/timer.png'))
-		timer_icon.set_type("timer")
-		timer_icon.setToolTip("Timer node")
-		self.topToolbar.addWidget(timer_icon)
-
-		#bottom toolbar
-		var_update_icon = Icon(pixmap=QPixmap('pics/variable_update.png'))
-		var_update_icon.set_type("variable_update")
-		var_update_icon.setToolTip("Variable update node")
-		self.bottomToolbar.addWidget(var_update_icon)
+		self.addDraggableIcon('pics/wait.png', 'wait', "Wait node", self.topToolbar)
+		self.addDraggableIcon('pics/timer.png', 'timer', "Timer node", self.topToolbar)
+		self.addDraggableIcon('pics/variable_update.png', 'variable_update', "Variable update node", self.bottomToolbar)
 	
 		self.llm_variable_icon = Icon(pixmap=QPixmap('pics/gpt_variable.png'))
 		self.llm_variable_icon.set_type("gpt_variable")
@@ -334,15 +289,8 @@ class ScriptMainWindow(QMainWindow):
 		self.llm_variable_icon.customContextMenuRequested.connect(self.openLLMChoiceVariableMenu)
 		self.bottomToolbar.addWidget(self.llm_variable_icon)
 
-		reset_variable_icon = Icon(pixmap=QPixmap('pics/reset_variables.png'))
-		reset_variable_icon.set_type("reset_variables")
-		reset_variable_icon.setToolTip("Reset variables node")
-		self.bottomToolbar.addWidget(reset_variable_icon)
-
-		var_decision_icon = Icon(pixmap=QPixmap('pics/variable_decision.png'))
-		var_decision_icon.set_type("variable_decision")
-		var_decision_icon.setToolTip("Variable decision node")
-		self.bottomToolbar.addWidget(var_decision_icon)
+		self.addDraggableIcon('pics/reset_variables.png', 'reset_variables', "Reset variables node", self.bottomToolbar)
+		self.addDraggableIcon('pics/variable_decision.png', 'variable_decision', "Variable decision node", self.bottomToolbar)
 
 		self.llm_decision_icon = Icon(pixmap=QPixmap('pics/gpt_decision.png'))
 		self.llm_decision_icon.set_type("gpt_decision")
@@ -351,76 +299,28 @@ class ScriptMainWindow(QMainWindow):
 		self.llm_decision_icon.customContextMenuRequested.connect(self.openLLMChoiceDecisionMenu)
 		self.bottomToolbar.addWidget(self.llm_decision_icon)
 
-		random_decision_icon = Icon(pixmap=QPixmap('pics/random_decision.png'))
-		random_decision_icon.set_type("random_decision")
-		random_decision_icon.setToolTip("Random decision node")
-		self.bottomToolbar.addWidget(random_decision_icon)
+		self.addDraggableIcon('pics/random_decision.png', 'random_decision', "Random decision node", self.bottomToolbar)
+		self.addDraggableIcon('pics/turn_based_decision.png', 'turn_based_decision', "Turn-based decision node", self.bottomToolbar)
+		self.addDraggableIcon('pics/enter_subseq.png', 'enter_subseq', "Enter subsequence node", self.bottomToolbar)
 
-		turn_based_decision_icon = Icon(pixmap=QPixmap('pics/turn_based_decision.png'))
-		turn_based_decision_icon.set_type("turn_based_decision")
-		turn_based_decision_icon.setToolTip("Turn-based decision node")
-		self.bottomToolbar.addWidget(turn_based_decision_icon)
-
-		enter_subseq_icon = Icon(pixmap=QPixmap('pics/enter_subseq.png'))
-		enter_subseq_icon.set_type("enter_subseq")
-		enter_subseq_icon.setToolTip("Enter subsequence node")
-		self.bottomToolbar.addWidget(enter_subseq_icon)
 
 		spacer = QWidget()
 		spacer.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 		self.bottomToolbar.addWidget(spacer)
 
-		environment_button = QToolButton(self)
-		environment_button.setIcon(QIcon('pics/environment.png'))
-		environment_button.clicked.connect(self.setEnvironment)
-		environment_button.setToolTip("Set up environment")
-		self.bottomToolbar.addWidget(environment_button)
-
-		variable_button = QToolButton(self)
-		variable_button.setIcon(QIcon('pics/variables.png'))
-		variable_button.clicked.connect(self.setVariables)
-		variable_button.setToolTip("Variable list")
-		self.bottomToolbar.addWidget(variable_button)	
-
-		word_list_button = QToolButton(self)
-		word_list_button.setIcon(QIcon('pics/word_list.png'))
-		word_list_button.clicked.connect(self.setWordLists)
-		word_list_button.setToolTip("Word lists")
-		self.bottomToolbar.addWidget(word_list_button)	
-
-		subsequences_button = QToolButton(self)
-		subsequences_button.setIcon(QIcon('pics/subsequences.png'))
-		subsequences_button.clicked.connect(self.setSubsequences)
-		subsequences_button.setToolTip("Subsequences")
-		self.bottomToolbar.addWidget(subsequences_button)	
-
-		llms_button = QToolButton(self)
-		llms_button.setIcon(QIcon('pics/llms.png'))
-		llms_button.clicked.connect(self.showLLMs)
-		llms_button.setToolTip("LLM selection")
-		self.bottomToolbar.addWidget(llms_button)
-
-		local_llm_button = QToolButton(self)
-		local_llm_button.setIcon(QIcon('pics/local_llm.png'))
-		local_llm_button.clicked.connect(self.showLocalLLMs)
-		local_llm_button.setToolTip("Local LLM settings")
-		self.bottomToolbar.addWidget(local_llm_button)
+		self.addButton('pics/environment.png', "Set up environment", self.bottomToolbar, self.setEnvironment)
+		self.addButton('pics/variables.png', "Variable list", self.bottomToolbar, self.setVariables)	
+		self.addButton('pics/word_list.png', "Word lists", self.bottomToolbar, self.setWordLists)	
+		self.addButton('pics/subsequences.png', "Subsequences", self.bottomToolbar, self.setSubsequences)
+		self.addButton('pics/llms.png', "LLM selection", self.bottomToolbar, self.showLLMs)
+		self.addButton('pics/local_llm.png', "Local LLM settings", self.bottomToolbar, self.showLocalLLMs)
 
 		spacer = QWidget()
 		spacer.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 		self.bottomToolbar.addWidget(spacer)
 
-		# python_function_icon = Icon(pixmap=QPixmap('pics/python_function.png'))
-		# python_function_icon.set_type("python_function")
-		# python_function_icon.setToolTip("Run external Python module")
-		# self.bottomToolbar.addWidget(python_function_icon)
-		self.addDraggableIcon('pics/python_function.png', 'python_function', "Run external Python bmodule")
-		self.addDraggableIcon('pics/send_to_dm.png', 'send_to_dm', "Send message to dialogue manager")
-
-		# send_to_DM_icon = Icon(pixmap=QPixmap('pics/send_to_dm.png'))
-		# send_to_DM_icon.set_type("send_to_dm")
-		# send_to_DM_icon.setToolTip("Send message to dialogue manager")
-		# self.bottomToolbar.addWidget(send_to_DM_icon)
+		self.addDraggableIcon('pics/python_function.png', 'python_function', "Run external Python module", self.bottomToolbar)
+		self.addDraggableIcon('pics/send_to_dm.png', 'send_to_dm', "Send message to dialogue manager", self.bottomToolbar)
 
 		self.addToolBar(self.topToolbar)
 		self.addToolBarBreak()
@@ -429,11 +329,19 @@ class ScriptMainWindow(QMainWindow):
 		self.setStatusBar(QStatusBar(self))
 		self.scriptRunning = False
 	
-	def addDraggableIcon(self, icon_filename, icon_type, tooltip):
+	def addDraggableIcon(self, icon_filename, icon_type, tooltip, toolbar):
 		icon = Icon(pixmap=QPixmap(icon_filename))
 		icon.set_type(icon_type)
 		icon.setToolTip(tooltip)
-		self.bottomToolbar.addWidget(icon)
+		toolbar.addWidget(icon)
+	
+	def addButton(self, icon_filename, tooltip, toolbar, click_command):
+		button = QToolButton(self)
+		button.setIcon(QIcon(icon_filename))
+		button.clicked.connect(click_command)
+		button.setToolTip(tooltip)
+		toolbar.addWidget(button)
+
 
 	
 	def makeStatusBar(self):
@@ -972,7 +880,6 @@ class MyView(QGraphicsView):
 
 		selectedNodes = [x for x in self.scene().items() if x.isSelected() == True and isinstance(x, DialogNode)]
 		if len(selectedNodes) == 1:
-			print(selectedNodes[0], isinstance(selectedNodes[0], RobotLLMNode))
 			if isinstance(selectedNodes[0], RobotLLMNode) or isinstance(selectedNodes[0], LLMDecisionNode) or isinstance(selectedNodes[0], LLMVariableUpdateNode):
 				submenu = QMenu("Set LLM", self)
 				GPTAction = QAction("GPT", self)
@@ -1209,7 +1116,6 @@ def playScript(window, nodeID=None):
 								return
 							else:
 								setting = localModelSettings[m]
-								print(window.custom_llm_clients)
 								client = window.custom_llm_clients[m]
 								if not client.connected:
 									custom_available = -1
