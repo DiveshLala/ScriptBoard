@@ -1142,8 +1142,6 @@ def playScript(window, nodeID=None):
 					if w.scene.doesScriptUseLLM("lmstudio"):
 						localModels = w.scene.getAllUsedLocalModels()
 						localModelSettings = w.getMainWindow().local_llm_setting
-						print(localModels)
-						print(localModelSettings)
 						if len(localModelSettings) == 0:
 							dlg = QMessageBox()
 							dlg.setWindowTitle("No LM Studio Models")
@@ -1158,7 +1156,7 @@ def playScript(window, nodeID=None):
 								if m == "":
 									dlg = QMessageBox()
 									dlg.setWindowTitle("Local LLM does not exist")
-									dlg.setText("There is a local LLM model which has no model name.")
+									dlg.setText("There is a local LLM node without a model name.")
 									ret = dlg.exec()
 								else:
 									dlg = QMessageBox()
@@ -1167,13 +1165,59 @@ def playScript(window, nodeID=None):
 									ret = dlg.exec()
 								return
 							else:
-								setting = localModelSettings[m]
-								LMStudio_available = check_for_LMStudio(setting["IP"], setting["port"])
+								setting = localModelSettings[m]	
+								LMStudio_available = check_for_LMStudio(setting["IP"], setting["port"])							
 							
 						if LMStudio_available != 0:
 							dlg = QMessageBox()
 							dlg.setWindowTitle("Run without LLM?")
 							dlg.setText("This script cannot connect to the defined LM Studio model. Run anyway?")
+							dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+							ret = dlg.exec()
+							if ret == QMessageBox.Yes:
+								break
+							else:
+								return
+						break
+				
+				# check for custom models
+				for w in windows:
+					if w.scene.doesScriptUseLLM("custom"):
+						localModels = w.scene.getAllUsedLocalModels()
+						localModelSettings = w.getMainWindow().local_llm_setting
+						if len(localModelSettings) == 0:
+							dlg = QMessageBox()
+							dlg.setWindowTitle("No Custom Models")
+							dlg.setText("There are no local LLM models set in the script. Please define them by clicking on the local LLM window.")
+							ret = dlg.exec()
+							return
+							
+						# check for LM Studio local models
+						custom_available = 0
+						for m in localModels:
+							if m not in localModelSettings:
+								if m == "":
+									dlg = QMessageBox()
+									dlg.setWindowTitle("Custom model does not exist")
+									dlg.setText("There is a custom model node without a model name.")
+									ret = dlg.exec()
+								else:
+									dlg = QMessageBox()
+									dlg.setWindowTitle("Local LLM does not exist")
+									dlg.setText("The defined custom model " + m +  " is used in the script but not defined in the local LLM list.")
+									ret = dlg.exec()
+								return
+							else:
+								setting = localModelSettings[m]
+								print(window.custom_llm_clients)
+								client = window.custom_llm_clients[m]
+								if not client.connected:
+									custom_available = -1
+							
+						if custom_available != 0:
+							dlg = QMessageBox()
+							dlg.setWindowTitle("Run without custom model?")
+							dlg.setText("This script cannot connect to the defined custom model. Run anyway?")
 							dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 							ret = dlg.exec()
 							if ret == QMessageBox.Yes:

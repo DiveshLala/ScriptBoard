@@ -285,7 +285,7 @@ class ScriptProcessor:
 					return
 				output_node_id = random.choice(node_outputs)
 				node_id = output_node_id
-			elif node["type"] == "robot_gpt" or node["type"] == "robot_gemini" or node["type"] == "robot_lmstudio":
+			elif node["type"] == "robot_gpt" or node["type"] == "robot_gemini" or node["type"] == "robot_lmstudio" or node["type"] == "robot_custom":
 				output_node_id = self.get_output_node_id(node)
 				barge_in = [c["connectedNodeID"] for c in node["connectors"] if c["type"] == "condition_output" and c["condition"]["target"] == "Barge-in"]
 				gaze = node["gaze"]
@@ -303,82 +303,28 @@ class ScriptProcessor:
 
 				# send LLM prompt
 				if node["type"] == "robot_gpt":
-					self.send_message_to_llm_client(llm_message(prompt, "gpt", recv_type="stream"))
+					client = self.llm_client
+					message = llm_message(prompt, "gpt", recv_type="stream")
 				elif node["type"] == "robot_gemini":
-					self.send_message_to_llm_client(llm_message(prompt, "gemini", recv_type="stream"))
+					client = self.llm_client
+					message = llm_message(prompt, "gemini", recv_type="stream")
 				elif node["type"] == "robot_lmstudio":
 					local_llms = self.parent_window.getLocalLLMSetting()
 					info = local_llms[node["model name"]]
 					conn = {"IP": info["IP"], "port": info["port"]}
-					self.send_message_to_llm_client(llm_message(prompt, "lmstudio", recv_type="stream", conn_info=conn))
-				self.llm_client.streaming = True
+					client = self.llm_client
+					message = llm_message(prompt, "lmstudio", recv_type="stream", conn_info=conn)
+				elif node["type"] == "robot_custom":
+					custom_llm_clients = self.parent_window.custom_llm_clients
+					client = custom_llm_clients[node["model name"]]
+					message = llm_message(prompt, "custom", recv_type="stream")
 
-				#gaze for each sentence
-				gaze_id = self.get_gaze_id(gaze)
-
-				if gaze_id == -1 and gaze == "Multiparty shift":
-					gaze_targets = cycle([u.id for u in self.users])
-				else:
-					gaze_targets = cycle([gaze_id])
-				
-				# if there is a filler then play it before the LLM utterance
-				if len(node["filler"]) > 0:
-					filler = node["filler"]
-					if filler.startswith("wordlist="):
-						filler_file = filler.replace("wordlist=", "")
-						candidates = []
-						f = open("./word_lists/" + filler_file + ".words", "r", encoding="utf-8")
-						[candidates.append(word.strip()) for word in f.readlines() if len(word) > 0]
-						picked = random.choice(candidates)
-						self.send_message_to_server(utterance_message(picked, "filler", "", "", next(gaze_targets)))
-					else:
-						self.send_message_to_server(utterance_message(filler, "filler", "", "", next(gaze_targets)))
-						
-					while len(self.received_robot_utterance.strip()) == 0:
-						time.sleep(0.01)	
-					self.dialog_history.append(["ROBOT", filler])
-					self.received_robot_utterance = ""
-					self.update_monitoring_window()
-
-				while self.llm_client.streaming or len(self.llm_client.streamed_sentences) > 0:
-					if len(self.llm_client.streamed_sentences) > 0:
-						llm_response = self.llm_client.streamed_sentences[0]
-						self.llm_client.streamed_sentences.pop(0)
-						llm_response = llm_response.replace("\n", "")
-						self.llm_client.response = ""
-						time.sleep(0.1)
-						barged = False
-
-						gaze_target = next(gaze_targets)
-
-						#if a failure message is received then continue to the next
-						if llm_response == "FAIL_RESPONSE":
-							if len(fallback_utterance) > 0:
-								self.send_message_to_server(utterance_message(fallback_utterance, "", "", "", gaze_target))	
-							self.update_monitoring_window()
-							break
-
-						self.send_message_to_server(utterance_message(llm_response, "", "", "", gaze_target))	
-
-						while len(self.received_robot_utterance.strip()) == 0:
-							#check for barge in
-							if len(barge_in) > 0 and self.bargeInFlag:
-								output_node_id = barge_in[0]
-								barged = True
-								self.bargeInFlag = False
-								break
-							if not self.parent_window.scriptRunning:
-								print("Script stopped")
-								return
-							time.sleep(0.01)
-
-						print("Robot said", self.received_robot_utterance.strip())
-						self.received_robot_utterance = ""
-						self.dialog_history.append(["ROBOT", llm_response])
-						self.update_monitoring_window()
+				self.send_message_to_client(client, message)
+				# process the talk
+				self.process_robot_llm_talk(node, gaze, fallback_utterance, barge_in, client, output_node_id)
 				self.received_robot_utterance = ""
 				node_id = output_node_id
-			elif node["type"] == "gpt_decision" or node["type"] == "gemini_decision" or node["type"] == "lmstudio_decision":
+			elif node["type"] == "gpt_decision" or node["type"] == "gemini_decision" or node["type"] == "lmstudio_decision" or node["type"] == "custom_decision":
 				node_outputs = [c["connectedNodeID"] for c in node["connectors"] if c["type"] == "condition_output"]
 				if len(node_outputs) == 0:
 					return
@@ -390,48 +336,29 @@ class ScriptProcessor:
 					x = DialogPrompt(prompt_info["text prompt"], prompt_info["speakers"], prompt_info["history"], prompt_info["turns"])
 					x.parseVariables(self.variable_dict)
 					prompt = self.create_llm_prompt(x)
+
+					# send LLM prompt
 					if node["type"] == "gpt_decision":
-						self.send_message_to_llm_client(llm_message(prompt, "gpt"))
+						client = self.llm_client
+						message = llm_message(prompt, "gpt")
 					elif node["type"] == "gemini_decision":
-						self.send_message_to_llm_client(llm_message(prompt, "gemini"))
+						client = self.llm_client
+						message = llm_message(prompt, "gemini")
 					elif node["type"] == "lmstudio_decision":
+						client = self.llm_client
 						local_llms = self.parent_window.getLocalLLMSetting()
 						info = local_llms[node["model name"]]
 						conn = {"IP": info["IP"], "port": info["port"]}
-						self.send_message_to_llm_client(llm_message(prompt, "lmstudio", conn_info=conn))
-					while self.llm_client.response == None or len(self.llm_client.response) == 0:
-						time.sleep(0.1)
-					llm_response = self.llm_client.response
-					self.llm_client.response = ""
-					next_node = None
-					for c in node["connectors"]:
-						if c["type"] == "condition_output":
-							condition = c["condition"]
-							outputID = c["connectedNodeID"]
-							if outputID == None:
-								continue
+						message = llm_message(prompt, "lmstudio", conn_info=conn)
+					elif node["type"] == "custom_decision":
+						custom_llm_clients = self.parent_window.custom_llm_clients
+						client = custom_llm_clients[node["model name"]]
+						message = llm_message(prompt, "custom")
 
-							if condition["comparator"] == "is other":
-								next_node = outputID
-								break
+					self.send_message_to_client(client, message)
 
-							comparator = condition["comparator"]
-							value = condition["value"]
-							var_type = condition["type"]
-
-							if var_type == "String" and llm_response != None:
-								if meets_string_condition(llm_response, comparator, value):
-									next_node = outputID
-									break
-							elif var_type == "Numeric" and llm_response != None:
-								value = float(value)
-								try:
-									llm_response = int(llm_response)
-									if meets_numerical_condition(llm_response, comparator, value):
-										next_node = outputID
-										break
-								except ValueError as e:
-									continue
+					# process the decision
+					next_node = self.process_llm_decision(node, client)
 					node_id = next_node
 			elif node["type"] == "turn_based_decision":
 				node_outputs = [c["connectedNodeID"] for c in node["connectors"] if c["type"] == "condition_output"]
@@ -465,49 +392,34 @@ class ScriptProcessor:
 					self.send_message_to_server(tts_parameter_message(p[0], p[1]))
 					time.sleep(0.1)
 				node_id = output_node_id
-			elif node["type"] == "gpt_variable" or node["type"] == "gemini_variable" or node["type"] == "lmstudio_variable":
+			elif node["type"] == "gpt_variable" or node["type"] == "gemini_variable" or node["type"] == "lmstudio_variable" or node["type"] == "custom_variable":
 				output_node_id = self.get_output_node_id(node)
 				prompt_info = node["prompt"]
 				x = DialogPrompt(prompt_info["text prompt"], prompt_info["speakers"], prompt_info["history"], prompt_info["turns"])
 				x.parseVariables(self.variable_dict)
 				prompt = self.create_llm_prompt(x)
+
+				# send LLM prompt
 				if node["type"] == "gpt_variable":
-					self.send_message_to_llm_client(llm_message(prompt, "gpt"))
+					client = self.llm_client
+					message = llm_message(prompt, "gpt")
 				elif node["type"] == "gemini_variable":
-					self.send_message_to_llm_client(llm_message(prompt, "gemini"))
+					client = self.llm_client
+					message = llm_message(prompt, "gemini")
 				elif node["type"] == "lmstudio_variable":
+					client = self.llm_client
 					local_llms = self.parent_window.getLocalLLMSetting()
 					info = local_llms[node["model name"]]
 					conn = {"IP": info["IP"], "port": info["port"]}
-					self.send_message_to_llm_client(llm_message(prompt, "lmstudio", conn_info=conn))
-				while self.llm_client.response == None or len(self.llm_client.response) == 0:
-					time.sleep(0.1)
-				print("LLM response", self.llm_client.response)
-				llm_response = self.llm_client.response
-				if llm_response != None:
-					llm_response = llm_response.replace("\n", "")
-					self.llm_client.response = ""
-					variable = node["variable"]
-					variableInfo = self.variable_dict[variable]
-					try:
-						if variableInfo[0] == "Int":
-							self.variable_dict[variable][1] = int(llm_response)
-						elif variableInfo[0] == "Float":
-							self.variable_dict[variable][1] = float(llm_response)
-						elif variableInfo[0] == "Boolean":
-							if llm_response.lower() == "true":
-								self.variable_dict[variable][1] = True
-							elif llm_response.lower() == "false":
-								self.variable_dict[variable][1] = False
-						else:
-							self.variable_dict[variable][1] = llm_response
-						print("updated", self.variable_dict[variable])
-					except ValueError as e:
-						print(e)
-						print("Could not update variable, wrong type!")
-				else:
-					print("No variables updated from LLM...")
-				self.update_monitoring_window()
+					message = llm_message(prompt, "lmstudio", conn_info=conn)
+				elif node["type"] == "custom_variable":
+					custom_llm_clients = self.parent_window.custom_llm_clients
+					client = custom_llm_clients[node["model name"]]
+					message = llm_message(prompt, "custom")
+				self.send_message_to_client(client, message)
+				
+				# process he variable update
+				self.process_llm_variable_update(node, client)
 				node_id = output_node_id
 			elif node["type"] == "function":
 				output_node_id = self.get_output_node_id(node)
@@ -568,6 +480,143 @@ class ScriptProcessor:
 			else:
 				print("Entering ", node_id)
 		# print("Node", node_id, "finished")
+	
+
+	def process_robot_llm_talk(self, node, gaze, fallback_utterance, barge_in, client, output_node_id):
+
+		client.streaming = True
+
+		#gaze for each sentence
+		gaze_id = self.get_gaze_id(gaze)
+
+		if gaze_id == -1 and gaze == "Multiparty shift":
+			gaze_targets = cycle([u.id for u in self.users])
+		else:
+			gaze_targets = cycle([gaze_id])
+		
+		# if there is a filler then play it before the LLM utterance
+		if len(node["filler"]) > 0:
+			filler = node["filler"]
+			if filler.startswith("wordlist="):
+				filler_file = filler.replace("wordlist=", "")
+				candidates = []
+				f = open("./word_lists/" + filler_file + ".words", "r", encoding="utf-8")
+				[candidates.append(word.strip()) for word in f.readlines() if len(word) > 0]
+				picked = random.choice(candidates)
+				self.send_message_to_server(utterance_message(picked, "filler", "", "", next(gaze_targets)))
+			else:
+				self.send_message_to_server(utterance_message(filler, "filler", "", "", next(gaze_targets)))
+				
+			while len(self.received_robot_utterance.strip()) == 0:
+				time.sleep(0.01)	
+			self.dialog_history.append(["ROBOT", filler])
+			self.received_robot_utterance = ""
+			self.update_monitoring_window()
+
+		while client.streaming or len(client.streamed_sentences) > 0:
+			if len(client.streamed_sentences) > 0:
+				llm_response = client.streamed_sentences[0]
+				client.streamed_sentences.pop(0)
+				llm_response = llm_response.replace("\n", "")
+				client.response = ""
+				time.sleep(0.1)
+				barged = False
+
+				gaze_target = next(gaze_targets)
+
+				#if a failure message is received then continue to the next
+				if llm_response == "FAIL_RESPONSE":
+					if len(fallback_utterance) > 0:
+						self.send_message_to_server(utterance_message(fallback_utterance, "", "", "", gaze_target))	
+					self.update_monitoring_window()
+					return output_node_id
+
+				self.send_message_to_server(utterance_message(llm_response, "", "", "", gaze_target))	
+
+				while len(self.received_robot_utterance.strip()) == 0:
+					#check for barge in
+					if len(barge_in) > 0 and self.bargeInFlag:
+						barge_in_node_id = barge_in[0]
+						barged = True
+						self.bargeInFlag = False
+						return barge_in_node_id
+					if not self.parent_window.scriptRunning:
+						print("Script stopped")
+						return output_node_id
+					time.sleep(0.01)
+
+				print("Robot said", self.received_robot_utterance.strip())
+				self.received_robot_utterance = ""
+				self.dialog_history.append(["ROBOT", llm_response])
+				self.update_monitoring_window()
+		return output_node_id
+
+	def process_llm_variable_update(self, node, client):
+		while client.response == None or len(client.response) == 0:
+			time.sleep(0.1)
+		print("LLM response", client.response)
+		llm_response = client.response
+		if llm_response != None:
+			llm_response = llm_response.replace("\n", "")
+			self.llm_client.response = ""
+			variable = node["variable"]
+			variableInfo = self.variable_dict[variable]
+			try:
+				if variableInfo[0] == "Int":
+					self.variable_dict[variable][1] = int(llm_response)
+				elif variableInfo[0] == "Float":
+					self.variable_dict[variable][1] = float(llm_response)
+				elif variableInfo[0] == "Boolean":
+					if llm_response.lower() == "true":
+						self.variable_dict[variable][1] = True
+					elif llm_response.lower() == "false":
+						self.variable_dict[variable][1] = False
+				else:
+					self.variable_dict[variable][1] = llm_response
+				print("updated", self.variable_dict[variable])
+			except ValueError as e:
+				print(e)
+				print("Could not update variable, wrong type!")
+		else:
+			print("No variables updated from LLM...")
+		self.update_monitoring_window()
+
+
+	def process_llm_decision(self, node, client):
+
+		while client.response == None or len(client.response) == 0:
+			time.sleep(0.1)
+			llm_response = client.response
+			client.response = ""
+			next_node = None
+			for c in node["connectors"]:
+				if c["type"] == "condition_output":
+					condition = c["condition"]
+					outputID = c["connectedNodeID"]
+					if outputID == None:
+						continue
+
+					if condition["comparator"] == "is other":
+						next_node = outputID
+						return next_node
+
+					comparator = condition["comparator"]
+					value = condition["value"]
+					var_type = condition["type"]
+
+					if var_type == "String" and llm_response != None:
+						if meets_string_condition(llm_response, comparator, value):
+							next_node = outputID
+							return next_node
+					elif var_type == "Numeric" and llm_response != None:
+						value = float(value)
+						try:
+							llm_response = int(llm_response)
+							if meets_numerical_condition(llm_response, comparator, value):
+								next_node = outputID
+								return next_node
+						except ValueError as e:
+							continue
 
 
 	def get_silence_condition(self, node):
@@ -1105,9 +1154,9 @@ class ScriptProcessor:
 	def send_message_to_server(self, message):
 		self.server.send_message(message)
 
-	def send_message_to_llm_client(self, message):
+	def send_message_to_client(self, client, message):
 		print("message", message)
-		self.llm_client.send_message(message)
+		client.send_message(message)
 
 	def update_monitoring_window(self):
 		self.parent_window.doUpdate()

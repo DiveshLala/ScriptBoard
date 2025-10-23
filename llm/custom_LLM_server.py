@@ -1,5 +1,6 @@
 import socket
 import json
+import time
 
 #class for sending message to server
 class Server():
@@ -38,7 +39,18 @@ class Server():
 							continue
 						try:
 							json_msg = json.loads(line)
-							self.process_message(json_msg)
+							response_type = json_msg["type"]
+							if response_type == "stream":
+								message = json.dumps({"type": "stream", "sentence": "This is a streamed response.", "ended": False})
+								self.send_message(message)
+								time.sleep(0.1)
+								message = json.dumps({"type": "stream", "sentence": "Send one sentence at a time.", "ended": False})
+								self.send_message(message)
+								message = json.dumps({"type": "stream", "sentence": "", "ended": True})
+								self.send_message(message)
+							if response_type == "block":
+								message = json.dumps({"type": "block", "sentence": "This is a block response", "ended": True})
+								self.send_message(message)
 						except json.JSONDecodeError:
 							print("incorrect message..", line)
 							continue
@@ -58,12 +70,9 @@ class Server():
 
 	def send_message(self, message):
 			try:
-				# メッセージをエンコード
 				data = message.encode()
-				# 長さを4バイトbig endianで送信
 				length = len(data)
 				self.client_socket.send(length.to_bytes(4, byteorder='big'))
-				# 本体を送信
 				self.client_socket.send(data)
 			except:
 				print("Server disconnected!")
