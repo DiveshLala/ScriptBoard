@@ -2,3 +2,4 @@ init.ini
 *pycache*
 llm/llm_login_info.txt
 /scripts
+dialog_manager/*.txt
