@@ -552,6 +552,7 @@ class ScriptProcessor:
 		return output_node_id
 
 	def process_llm_variable_update(self, node, client):
+		client.response = ""
 		while client.response == None or len(client.response) == 0:
 			time.sleep(0.1)
 		print("LLM response", client.response)
@@ -587,7 +588,7 @@ class ScriptProcessor:
 		client.response = ""
 		while client.response == None or len(client.response) == 0:
 			time.sleep(0.1)
-			
+
 		llm_response = client.response
 		next_node = None
 		for c in node["connectors"]:
