@@ -584,39 +584,40 @@ class ScriptProcessor:
 
 	def process_llm_decision(self, node, client):
 
+		client.response = ""
 		while client.response == None or len(client.response) == 0:
 			time.sleep(0.1)
-			llm_response = client.response
-			client.response = ""
-			next_node = None
-			for c in node["connectors"]:
-				if c["type"] == "condition_output":
-					condition = c["condition"]
-					outputID = c["connectedNodeID"]
-					if outputID == None:
-						continue
+			
+		llm_response = client.response
+		next_node = None
+		for c in node["connectors"]:
+			if c["type"] == "condition_output":
+				condition = c["condition"]
+				outputID = c["connectedNodeID"]
+				if outputID == None:
+					continue
 
-					if condition["comparator"] == "is other":
+				if condition["comparator"] == "is other":
+					next_node = outputID
+					return next_node
+
+				comparator = condition["comparator"]
+				value = condition["value"]
+				var_type = condition["type"]
+
+				if var_type == "String" and llm_response != None:
+					if meets_string_condition(llm_response, comparator, value):
 						next_node = outputID
 						return next_node
-
-					comparator = condition["comparator"]
-					value = condition["value"]
-					var_type = condition["type"]
-
-					if var_type == "String" and llm_response != None:
-						if meets_string_condition(llm_response, comparator, value):
+				elif var_type == "Numeric" and llm_response != None:
+					value = float(value)
+					try:
+						llm_response = int(llm_response)
+						if meets_numerical_condition(llm_response, comparator, value):
 							next_node = outputID
 							return next_node
-					elif var_type == "Numeric" and llm_response != None:
-						value = float(value)
-						try:
-							llm_response = int(llm_response)
-							if meets_numerical_condition(llm_response, comparator, value):
-								next_node = outputID
-								return next_node
-						except ValueError as e:
-							continue
+					except ValueError as e:
+						continue
 
 
 	def get_silence_condition(self, node):
