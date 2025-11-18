@@ -144,11 +144,6 @@ class Client:
 			print("Server disconnected!")
 			self.connected = False
 
-#use a separate port to receive fillers
-class FillerClient(Client):
-	def __init__(self, host, port):
-		super().__init__(host, port)
-		self.client_type = "filler"
 
 class CustomLLMClient(Client):
 	def __init__(self, host, port):

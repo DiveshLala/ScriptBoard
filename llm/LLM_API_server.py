@@ -202,15 +202,6 @@ class Server():
 		print("==========================================================")
 
 
-# Fillers handles on a separate port
-# At the moment only handles LMStudio models
-class FillerServer(Server):
-
-	def __init__(self, port):
-		super().__init__(port)
-		self.server_type = "filler"
-
-
 
 def send_GPT_request(input_prompt, server = None, recv_type="block"):
 
@@ -527,15 +518,10 @@ def send_failure_message_for_stream(server):
 
 
 server = Server(5042)
-filler_server = FillerServer(6042)
 
 t = threading.Thread(target=server.connect)
 t.daemon = True
 t.start()
-
-t2 = threading.Thread(target=filler_server.connect)
-t2.daemon = True
-t2.start()
 
 if __name__ == "__main__":
 	while True:
