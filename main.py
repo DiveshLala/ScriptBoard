@@ -580,6 +580,8 @@ class ScriptMainWindow(QMainWindow):
 		self.variables = []
 		self.environment = []
 		self.subsequences = []
+		self.local_llm_setting = {}
+		self.custom_llm_clients = {}
 		self.filename = None
 		self.setWindowTitle("ScriptBoard")
 		self.scene.setSceneChanged(False)
