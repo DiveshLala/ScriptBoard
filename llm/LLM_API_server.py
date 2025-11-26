@@ -240,6 +240,7 @@ def send_GPT_request(input_prompt, server = None, recv_type="block"):
 					return None
 				return r
 			except Exception as e:
+				print(e)
 				return None
 
 		elif recv_type == "stream" and server is not None:
