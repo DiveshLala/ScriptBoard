@@ -107,6 +107,9 @@ class Client:
 								continue
 							response = response.replace("ROBOT:", "")
 							response = response.replace("HUMAN:", "")
+							response = response.replace("’", "'")
+							if response.startswith("ROBOT"):
+								response = response[5:]
 							if recv_type == "stream":
 								self.streamed_sentences.append(response)
 								print("LLM client sentences:", self.streamed_sentences)
