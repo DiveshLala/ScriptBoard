@@ -10,7 +10,7 @@ from itertools import cycle
 
 class ScriptProcessor:
 
-	def __init__(self, parent):
+	def __init__(self, parent, is_simulation):
 		filename = parent.filename
 
 		with open(filename, encoding="utf-8") as f:
@@ -31,6 +31,7 @@ class ScriptProcessor:
 		self.appRunning = False
 		self.bargeInFlag = False
 		self.isDoingBargeIn = False
+		self.simulation = is_simulation
 
 		self.dialog_history = []
 
@@ -43,6 +44,9 @@ class ScriptProcessor:
 				self.target_user = user
 		
 		self.parent_window.createMonitoringWindow(self.variable_dict)
+
+		if self.simulation:
+			self.parent_window.createSimulationWindow()
 
 	def initialize_variables(self):
 		for x in self.script_data:
@@ -318,7 +322,7 @@ class ScriptProcessor:
 					custom_llm_clients = self.parent_window.custom_llm_clients
 					client = custom_llm_clients[node["model name"]]
 					message = llm_message(prompt, "custom", recv_type="stream")
-
+				
 				self.send_message_to_client(client, message)
 				# process the talk
 				self.process_robot_llm_talk(node, gaze, fallback_utterance, barge_in, client, output_node_id)
@@ -531,7 +535,7 @@ class ScriptProcessor:
 					self.update_monitoring_window()
 					return output_node_id
 
-				self.send_message_to_server(utterance_message(llm_response, "", "", "", gaze_target))	
+				self.send_message_to_server(utterance_message(llm_response, "", "", "", gaze_target))
 
 				while len(self.received_robot_utterance.strip()) == 0:
 					#check for barge in
@@ -1154,17 +1158,26 @@ class ScriptProcessor:
 		return mod_hist
 	
 	def send_message_to_server(self, message):
-		self.server.send_message(message)
+		if not self.simulation:
+			self.server.send_message(message)
+		else:
+			self.send_message_to_simulator(message)
 
 	def send_message_to_client(self, client, message):
 		print("message", message)
 		client.send_message(message)
+	
+	def send_message_to_simulator(self, message):
+		self.parent_window.sendMessageToSimulator(message)
 
 	def update_monitoring_window(self):
 		self.parent_window.doUpdate()
 	
 	def close_monitoring_window(self):
 		self.parent_window.doUpdateCloseMonitoringWindow()
+	
+	def close_simulation_window(self):
+		self.parent_window.doUpdateCloseSimulationWindow()
 	
 	def centerNode(self, node_id, scale):
 		self.viewing_window.doCentering(node_id, scale)

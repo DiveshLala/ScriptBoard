@@ -62,7 +62,7 @@ class Server:
 							if len(msg.strip()) == 0:
 								continue
 							json_msg = json.loads(msg)
-							if self.processor != None:
+							if self.processor != None and not self.processor.simulation:
 								self.processor.message_notification(json_msg)
 							message = message.replace(msg, "")
 						part_message = message

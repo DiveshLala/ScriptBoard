@@ -36,6 +36,7 @@ import window_classes.variable_window as var_window
 import window_classes.word_list_window as word_list_window
 import window_classes.subsequences_window as subsequences_window
 import window_classes.monitoring_window as monitoring_window
+import window_classes.simulation_window as simulation_window
 import window_classes.llm_list_window as llm_list_window
 import window_classes.local_llm_window as local_llm_window
 import script_loader
@@ -50,6 +51,7 @@ class ScriptMainWindow(QMainWindow):
 
 	monitoringUpdate = QtCore.pyqtSignal()
 	monitoringClose = QtCore.pyqtSignal()
+	simulationClose = QtCore.pyqtSignal()
 	centeringUpdate = QtCore.pyqtSignal(int, float)
 
 
@@ -61,6 +63,7 @@ class ScriptMainWindow(QMainWindow):
 		self.advancedNodeList = ["record", "record_off", "parameters", "behavior_start", "behavior_stop", "python_function"]
 		self.monitoringUpdate.connect(self.updateMonitoringWindow)
 		self.monitoringClose.connect(self.closeMonitoringWindow)
+		self.simulationClose.connect(self.closeSimulationWindow)
 		self.centeringUpdate.connect(self.centerNode)
 		self.local_llm_setting = {}
 		self.custom_llm_clients = {}
@@ -247,7 +250,14 @@ class ScriptMainWindow(QMainWindow):
 		self.play_button = QToolButton(self)
 		self.play_button.setIcon(QIcon('pics/play.png'))
 		self.play_button.clicked.connect(lambda: self.playButtonClicked())
+		self.play_button.setToolTip('Play script using connected dialog manager')
 		self.topToolbar.addWidget(self.play_button)
+
+		self.simulation_button = QToolButton(self)
+		self.simulation_button.setIcon(QIcon('pics/simulation.png'))
+		self.simulation_button.clicked.connect(lambda: self.playButtonClicked(simulation=True))
+		self.simulation_button.setToolTip('Simulate script by manually entering ASR results')
+		self.topToolbar.addWidget(self.simulation_button)
 
 		self.stop_button = QToolButton(self)
 		self.stop_button.setIcon(QIcon('pics/stop.png'))
@@ -381,17 +391,17 @@ class ScriptMainWindow(QMainWindow):
 		except AttributeError as e:
 			pass
 
-	def playButtonClicked(self):
+	def playButtonClicked(self, simulation=False):
 		global sourceWindowForPlay
 		currentWindowName = self.tabbedWindow.getCurrentTabName()
 		if currentWindowName == "Main":
 			sourceWindowForPlay = self
-			playScript(self)
+			playScript(self, simulation)
 		else:
 			for s in self.subwindows:
 				if s.name == currentWindowName:
 					sourceWindowForPlay = s
-					playScript(s)
+					playScript(s, simulation)
 					break
 	
 	def playFromRightClick(self, n):
@@ -408,6 +418,8 @@ class ScriptMainWindow(QMainWindow):
 		self.server.send_message("SCRIPT_GUI:Stopped")
 		sourceWindowForPlay.scriptRunning = False
 		sourceWindowForPlay.closeMonitoringWindow()
+		if self.processor.simulation:
+			sourceWindowForPlay.closeSimulationWindow()
 		sourceWindowForPlay = None
 		currentWindowName = self.tabbedWindow.getCurrentTabName()
 
@@ -421,11 +433,6 @@ class ScriptMainWindow(QMainWindow):
 		self.scene.enableAllNodes()
 		for window in self.subwindows:
 			window.scene.enableAllNodes()
-
-
-	def closeMonitoringWindow(self):
-		if self.processor != None:
-			self.processor.close_monitoring_window()
 		
 	def disableIconsWhilePlaying(self):
 
@@ -775,17 +782,53 @@ class ScriptMainWindow(QMainWindow):
 		self.monitoring_window.move(0, 100)
 		self.monitoring_window.show()
 	
+	def createSimulationWindow(self):
+		self.simulation_window = simulation_window.SimulationWindow(self, [x[0] for x in self.environment])
+		self.simulation_window.show()
+		self.simulation_window.move(self.simulation_window.pos().x(), self.simulation_window.pos().y() + 100)
+	
+	def sendSimulatedASRMessage(self, humanID, text):
+		if self.processor != None:
+			simMessage = {}
+			simMessage["type"] = "asr"
+			simMessage["utterance"] = text
+			simMessage["human id"] = int(humanID)
+			self.processor.message_notification(simMessage)
+	
+	def sendSimulatedTurnMessage(self, human_id, turn):
+		simMessage = {}
+		simMessage["type"] = "turn"
+		simMessage["turn state"] = turn
+		if turn == "HUMAN_TURN":
+			simMessage["human id"] =int(human_id)
+		self.processor.message_notification(simMessage)
+
+	def sendSimulatedRobotSpeechMessage(self, robot_speech):
+		simMessage = {}
+		simMessage["type"] = "robot stop speech"
+		simMessage["utterance"] = robot_speech
+		self.processor.message_notification(simMessage)
+	
+	def sendMessageToSimulator(self, message):
+		self.simulation_window.receiveMessage(message)
+	
 	def doUpdate(self):
 		self.monitoringUpdate.emit()
 	
 	def doUpdateCloseMonitoringWindow(self):
 		self.monitoringClose.emit()
+	
+	def doUpdateCloseSimulationWindow(self):
+		self.simulationClose.emit()
 		
 	def updateMonitoringWindow(self):
 		self.monitoring_window.updateStatus(self.processor.dialog_history, self.processor.variable_dict)
 
 	def closeMonitoringWindow(self):
 		self.monitoring_window.close()
+
+	def closeSimulationWindow(self):
+		self.simulation_window.close()
 	
 	def doCentering(self, node_id, scale):
 		self.centeringUpdate.emit(node_id, scale)
@@ -974,9 +1017,9 @@ class TabbedWindow(QWidget):
 		return None
 	
 
-def playScript(window, nodeID=None):
+def playScript(window, isSimulation, nodeID=None):
 
-	if not window.server.connected:
+	if not isSimulation and not window.server.connected:
 		msgBox = QMessageBox()
 		msgBox.setWindowTitle("Not connected!")
 		msgBox.setText("Script is not connected to a dialogue manager!")
@@ -1134,8 +1177,9 @@ def playScript(window, nodeID=None):
 								return
 						break
 
-				window.processor = script_processor.ScriptProcessor(window)
+				window.processor = script_processor.ScriptProcessor(window, isSimulation)
 				window.play_button.setEnabled(False)
+				window.simulation_button.setEnabled(False)
 				window.stop_button.setEnabled(True)
 				window.scriptRunning = True
 				t1 = threading.Thread(target=window.processor.start, args=(nodeID,))
