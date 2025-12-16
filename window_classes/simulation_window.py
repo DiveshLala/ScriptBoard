@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QLabel, QDialog, QComboBox, QTextEdit
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QLabel, QDialog, QComboBox, QTextEdit, QCheckBox, QHBoxLayout, QSpinBox
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 import time
@@ -29,6 +29,14 @@ class SimulationWindow(QDialog):
 		self.manualEntry.textChanged.connect(self.textChanged)
 		layout.addWidget(self.manualEntry)
 
+		turnLayout = QHBoxLayout()
+		self.turnTime = QSpinBox()
+		self.turnTime.setRange(0, 5000)
+		self.turnTime.setSingleStep(500)
+		self.turnTime.setValue(1000)
+		turnLayout.addWidget(QLabel("Time taken for robot turn"))
+		turnLayout.addWidget(self.turnTime)
+		layout.addLayout(turnLayout)
 
 		layout.addWidget(QLabel("Conversation History:"))
 		self.conversationHistory = QTextEdit()
@@ -85,7 +93,7 @@ class DialogState:
 	def check_for_silence(self):
 		while True:
 			if self.turn_state == "HUMAN_TURN" and not self.user_speaking:
-				if (time.time() - self.silence_time_start) >= 0.5:
+				if (time.time() - self.silence_time_start) * 1000 >= self.simWindow.turnTime.value():
 					self.update_turn_state(None, "OFFER_TO_ROBOT")
 			time.sleep(0.02)
 	
