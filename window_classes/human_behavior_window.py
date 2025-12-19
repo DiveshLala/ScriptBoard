@@ -58,6 +58,7 @@ class HumanBehaviorWindow(QDialog):
 		speechConditionLayout = QHBoxLayout()
 		self.speechObjectCombo = QComboBox()
 		[self.speechObjectCombo.addItem(x) for x in self.speechObjects]
+		self.speechObjectCombo.setCurrentText("Target's turn")
 		self.speechComparatorCombo = QComboBox()
 		self.speechComparatorCombo.setFixedWidth(300)
 		[self.speechComparatorCombo.addItem(x) for x in self.speechStringComparators]
